@@ -19,6 +19,7 @@ import {
     JSONError,
     NetworkError,
     ParseError,
+    PromiseAbortedError,
 } from "./errors";
 import type { SafeError, SafeResult } from "./types";
 
@@ -186,11 +187,44 @@ function parseDispatchAndSetState<
     };
 }
 
-async function getCachedItemAsyncSafe<Data = unknown>(
+// Helper function to make any promise abortable
+function makeAbortable<Data = unknown>(
+    promise: Promise<Data>,
+    signal: AbortSignal,
+): Promise<Data> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+            if (signal.aborted) {
+                reject(
+                    new PromiseAbortedError(),
+                );
+            }
+
+            signal.addEventListener("abort", () => {
+                reject(
+                    new PromiseAbortedError(),
+                );
+            });
+        }),
+    ]);
+}
+
+async function getCachedItemAbortableSafe<Data = unknown>(
     key: string,
+    signal: AbortSignal,
 ): Promise<SafeResult<Data>> {
+    if (signal.aborted) {
+        return createSafeErrorResult(
+            new PromiseAbortedError(
+                "getCachedItemAbortableSafe aborted before start",
+            ),
+        );
+    }
+
     try {
-        const data = await localforage.getItem<Data>(key);
+        const cacheOperation = localforage.getItem<Data>(key);
+        const data = await makeAbortable(cacheOperation, signal);
         return createSafeSuccessResult(data);
     } catch (error: unknown) {
         return createSafeErrorResult(
@@ -199,12 +233,22 @@ async function getCachedItemAsyncSafe<Data = unknown>(
     }
 }
 
-async function setCachedItemAsyncSafe<Data = unknown>(
+async function setCachedItemAbortableSafe<Data = unknown>(
     key: string,
     value: Data,
+    signal: AbortSignal,
 ): Promise<SafeResult> {
+    if (signal.aborted) {
+        return createSafeErrorResult(
+            new PromiseAbortedError(
+                "setCachedItemAbortableSafe aborted before start",
+            ),
+        );
+    }
+
     try {
-        await localforage.setItem(key, value);
+        const cacheOperation = localforage.setItem<Data>(key, value);
+        await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
         return createSafeErrorResult(
@@ -213,11 +257,21 @@ async function setCachedItemAsyncSafe<Data = unknown>(
     }
 }
 
-async function removeCachedItemAsyncSafe(
+async function removeCachedItemAbortableSafe(
     key: string,
+    signal: AbortSignal,
 ): Promise<SafeResult> {
+    if (signal.aborted) {
+        return createSafeErrorResult(
+            new PromiseAbortedError(
+                "removeCachedItemAbortableSafe aborted before start",
+            ),
+        );
+    }
+
     try {
-        await localforage.removeItem(key);
+        const cacheOperation = localforage.removeItem(key);
+        await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
         return createSafeErrorResult(
@@ -322,10 +376,10 @@ async function retryFetchSafe<
 export {
     createSafeErrorResult,
     createSafeSuccessResult,
-    getCachedItemAsyncSafe,
+    getCachedItemAbortableSafe,
     parseDispatchAndSetState,
     parseSyncSafe,
-    removeCachedItemAsyncSafe,
+    removeCachedItemAbortableSafe,
     retryFetchSafe,
-    setCachedItemAsyncSafe,
+    setCachedItemAbortableSafe,
 };

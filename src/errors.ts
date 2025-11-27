@@ -205,6 +205,21 @@ class PromiseRejectionError extends AppErrorBase {
     }
 }
 
+class PromiseAbortedError extends AppErrorBase {
+    readonly _tag = "PromiseAbortedError";
+
+    constructor(error?: unknown, message = "Promise was aborted") {
+        super(
+            "PromiseAbortedError",
+            error instanceof Error ? error.name : "UnknownError",
+            error instanceof Error && error.stack
+                ? error.stack
+                : "Stack trace not available",
+            message,
+        );
+    }
+}
+
 class RetryLimitExceededError extends AppErrorBase {
     readonly _tag = "RetryLimitExceededError";
 
@@ -402,6 +417,7 @@ export {
     NetworkError,
     NotFoundError,
     ParseError,
+    PromiseAbortedError,
     PromiseRejectionError,
     RetryLimitExceededError,
     TimeoutError,

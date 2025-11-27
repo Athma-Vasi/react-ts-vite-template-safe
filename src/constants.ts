@@ -46,7 +46,8 @@ const valid_usernames = [
     "username.123",
 ];
 
-const fetch_timeout_ms = 15000;
+const fetch_timeout_ms = 5000;
+const async_timeout_ms = 10000;
 
 const property_descriptor = {
     configurable: false,
@@ -55,6 +56,7 @@ const property_descriptor = {
 };
 
 export {
+    async_timeout_ms,
     fetch_timeout_ms,
     invalid_booleans,
     invalid_numbers,
