@@ -13,7 +13,13 @@ import z, {
     ZodString,
 } from "zod";
 import type { $strip } from "zod/v4/core";
-import { AppErrorBase, CacheError, ParseError } from "./errors";
+import {
+    AppErrorBase,
+    CacheError,
+    JSONError,
+    NetworkError,
+    ParseError,
+} from "./errors";
 import type { SafeError, SafeResult } from "./types";
 
 function createSafeSuccessResult<Data = unknown>(
@@ -217,6 +223,89 @@ async function removeCachedItemAsyncSafe(
     }
 }
 
+type RetryOptions = {
+    backOffFactor?: number;
+    retries?: number;
+    delayMs?: number;
+};
+async function retryFetchSafe<
+    Data = unknown,
+>(
+    { init, input, retryOptions, signal }: {
+        init: RequestInit;
+        input: RequestInfo | URL;
+        retryOptions?: RetryOptions;
+        signal: AbortSignal | undefined;
+    },
+): Promise<SafeResult<Data>> {
+    const {
+        backOffFactor = 2,
+        retries = 3,
+        delayMs = 1000,
+    } = retryOptions ?? {};
+
+    async function tryAgain(
+        attempt: number,
+    ): Promise<SafeResult<Data>> {
+        try {
+            const response: Response = await fetch(input, {
+                ...init,
+                signal,
+            });
+            if (response == null) {
+                // perhaps a network-level failure occurred before any HTTP response could be received
+                // trigger a retry
+                throw new NetworkError("Response is null or undefined");
+            }
+
+            try {
+                const data = await response.json();
+                if (data == null) {
+                    // trigger a retry
+                    throw new JSONError("Response data is null or undefined");
+                }
+
+                return Promise.resolve(
+                    createSafeSuccessResult<Data>(
+                        data as Data,
+                    ),
+                );
+            } catch (error_: unknown) {
+                if (attempt === retries) {
+                    return Promise.resolve(
+                        createSafeErrorResult(error_),
+                    );
+                }
+
+                throw new JSONError(error_);
+            }
+        } catch (error: unknown) {
+            if (attempt === retries) {
+                return Promise.resolve(
+                    createSafeErrorResult(error),
+                );
+            }
+
+            // Exponential backoff with jitter
+            const backOff = Math.pow(backOffFactor, attempt) * delayMs;
+            const jitter = backOff * 0.2 * (Math.random() - 0.5);
+            const delay = backOff + jitter;
+
+            console.log(
+                `Attempt ${attempt + 1} failed. Retrying in ${delay}ms...`,
+            );
+
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    tryAgain(attempt + 1).then(resolve);
+                }, delay);
+            });
+        }
+    }
+
+    return tryAgain(0);
+}
+
 export {
     createSafeErrorResult,
     createSafeSuccessResult,
@@ -224,5 +313,6 @@ export {
     parseDispatchAndSetState,
     parseSyncSafe,
     removeCachedItemAsyncSafe,
+    retryFetchSafe,
     setCachedItemAsyncSafe,
 };
