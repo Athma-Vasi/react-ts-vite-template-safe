@@ -3,6 +3,7 @@ import type { LoginActions } from "./actions";
 import { loginActions } from "./actions";
 import type { LoginDispatch } from "./dispatches";
 import {
+    setCacheWorkerLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setPasswordLoginDispatchSchema,
     setUsernameLoginDispatchSchema,
@@ -21,11 +22,24 @@ const loginReducersMap: Map<
     LoginActions[keyof LoginActions],
     (state: LoginState, dispatch: LoginDispatch) => LoginState
 > = new Map([
+    [loginActions.setCacheWorker, loginReducer_setCacheWorker],
     [loginActions.setIsLoading, loginReducer_setIsLoading],
     [loginActions.setPassword, loginReducer_setPassword],
     [loginActions.setSafeErrorMaybe, loginReducer_setSafeErrorMaybe],
     [loginActions.setUsername, loginReducer_setUsername],
 ]);
+
+function loginReducer_setCacheWorker(
+    state: LoginState,
+    dispatch: LoginDispatch,
+): LoginState {
+    return parseDispatchAndSetState({
+        dispatch,
+        key: "cacheWorker",
+        state,
+        zSchema: setCacheWorkerLoginDispatchSchema,
+    });
+}
 
 function loginReducer_setIsLoading(
     state: LoginState,

@@ -7,10 +7,11 @@ type LoginActions = {
 };
 
 const loginActions: LoginActions = {
+    setCacheWorker: "setCacheWorker",
     setIsLoading: "setIsLoading",
     setPassword: "setPassword",
-    setUsername: "setUsername",
     setSafeErrorMaybe: "setSafeErrorMaybe",
+    setUsername: "setUsername",
 };
 
 export { loginActions };

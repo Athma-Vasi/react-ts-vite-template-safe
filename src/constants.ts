@@ -48,11 +48,18 @@ const VALID_USERNAMES = [
 
 const FETCH_TIMEOUT_MS = 15000;
 
+const PROPERTY_DESCRIPTOR = {
+    configurable: false,
+    enumerable: true,
+    writable: false,
+};
+
 export {
     FETCH_TIMEOUT_MS,
     INVALID_BOOLEANS,
     INVALID_NUMBERS,
     INVALID_STRINGS,
+    PROPERTY_DESCRIPTOR,
     VALID_BOOLEANS,
     VALID_PASSWORDS,
     VALID_STRINGS,
