@@ -106,15 +106,15 @@ function createSafeErrorResult(
 }
 
 function parseSyncSafe<Output = unknown>(
-    { object, zSchema }: {
+    { object, schema }: {
         object: Output;
-        zSchema: z.ZodSchema;
+        schema: z.ZodType<Output>;
     },
 ): SafeResult<Output> {
     try {
         const { data, error, success } = Array.isArray(object)
-            ? z.array(zSchema).safeParse(object)
-            : zSchema.safeParse(object);
+            ? z.array(schema).safeParse(object)
+            : schema.safeParse(object);
 
         return success
             ? createSafeSuccessResult(data as Output)
@@ -124,7 +124,13 @@ function parseSyncSafe<Output = unknown>(
                 ),
             );
     } catch (error_: unknown) {
-        return createSafeErrorResult(error_);
+        return createSafeErrorResult(
+            new ParseError(
+                error_,
+                `Exception thrown during parse of object:
+                ${JSON.stringify(object, null, 2) ?? "unknown object"}`,
+            ),
+        );
     }
 }
 
@@ -273,7 +279,12 @@ async function retryFetchSafe<
             } catch (error_: unknown) {
                 if (attempt === retries) {
                     return Promise.resolve(
-                        createSafeErrorResult(error_),
+                        createSafeErrorResult(
+                            new JSONError(
+                                error_,
+                                "Failed to parse JSON response after maximum retries",
+                            ),
+                        ),
                     );
                 }
 
@@ -282,7 +293,9 @@ async function retryFetchSafe<
         } catch (error: unknown) {
             if (attempt === retries) {
                 return Promise.resolve(
-                    createSafeErrorResult(error),
+                    createSafeErrorResult(
+                        new NetworkError(error, "Max retries reached"),
+                    ),
                 );
             }
 

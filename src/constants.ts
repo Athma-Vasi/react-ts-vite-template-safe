@@ -1,5 +1,5 @@
-const INVALID_BOOLEANS = [null, void 0, 0, 1, "", "true", "false", [], {}];
-const INVALID_STRINGS = [
+const invalid_booleans = [null, void 0, 0, 1, "", "true", "false", [], {}];
+const invalid_strings = [
     null,
     void 0,
     0,
@@ -9,7 +9,7 @@ const INVALID_STRINGS = [
     true,
     false,
 ];
-const INVALID_NUMBERS = [
+const invalid_numbers = [
     null,
     void 0,
     "",
@@ -21,8 +21,8 @@ const INVALID_NUMBERS = [
     [],
 ];
 
-const VALID_BOOLEANS = [true, false];
-const VALID_STRINGS = [
+const valid_booleans = [true, false];
+const valid_strings = [
     "true",
     "false",
     "True",
@@ -36,32 +36,32 @@ const VALID_STRINGS = [
     "valid with numbers, spaces and special characters 1234567890 !@#$%^&*()_+",
     "valid with spaces and special characters !@#$%^&*()_+",
 ];
-const VALID_PASSWORDS = [
+const valid_passwords = [
     "password123Q!",
     "1234567890Qq!",
 ];
-const VALID_USERNAMES = [
+const valid_usernames = [
     "username-123",
     "username_123",
     "username.123",
 ];
 
-const FETCH_TIMEOUT_MS = 15000;
+const fetch_timeout_ms = 15000;
 
-const PROPERTY_DESCRIPTOR = {
+const property_descriptor = {
     configurable: false,
     enumerable: true,
     writable: false,
 };
 
 export {
-    FETCH_TIMEOUT_MS,
-    INVALID_BOOLEANS,
-    INVALID_NUMBERS,
-    INVALID_STRINGS,
-    PROPERTY_DESCRIPTOR,
-    VALID_BOOLEANS,
-    VALID_PASSWORDS,
-    VALID_STRINGS,
-    VALID_USERNAMES,
+    fetch_timeout_ms,
+    invalid_booleans,
+    invalid_numbers,
+    invalid_strings,
+    property_descriptor,
+    valid_booleans,
+    valid_passwords,
+    valid_strings,
+    valid_usernames,
 };

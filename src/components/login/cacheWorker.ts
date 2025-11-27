@@ -1,16 +1,10 @@
-import {
-    PromiseRejectionError,
-    WorkerError,
-    WorkerMessageError,
-} from "../../errors";
+import { WorkerError, WorkerMessageError } from "../../errors";
 import type { SafeResult } from "../../types";
 import { createSafeErrorResult, createSafeSuccessResult } from "../../utils";
 
 type MessageEventLoginCacheWorkerToMain<
     State extends Record<PropertyKey, unknown> = Record<string, unknown>,
-> = MessageEvent<
-    SafeResult<State>
->;
+> = MessageEvent<SafeResult<State>>;
 
 type MessageEventLoginCacheMainToWorker<Key = PropertyKey, Value = unknown> =
     MessageEvent<
@@ -85,7 +79,7 @@ type MessageEventLoginCacheMainToWorker<Key = PropertyKey, Value = unknown> =
 }
 
 self.onerror = (event: string | Event) => {
-    console.error("Fetch Parse Worker error:", event);
+    console.error("Unhandled error in Login cache worker:", event);
     self.postMessage(
         createSafeErrorResult(
             new WorkerError(
@@ -96,18 +90,6 @@ self.onerror = (event: string | Event) => {
     );
     return true; // Prevents default logging to console
 };
-
-self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
-    console.error("Unhandled promise rejection in worker:", event.reason);
-    self.postMessage(
-        createSafeErrorResult(
-            new PromiseRejectionError(
-                event.reason,
-                "Unhandled promise rejection in Login cache worker",
-            ),
-        ),
-    );
-});
 
 export type {
     MessageEventLoginCacheMainToWorker,

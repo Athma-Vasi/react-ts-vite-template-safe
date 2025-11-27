@@ -3,7 +3,8 @@ import type { LoginActions } from "./actions";
 import { loginActions } from "./actions";
 import type { LoginDispatch } from "./dispatches";
 import {
-    setCacheWorkerLoginDispatchSchema,
+    setCacheWorkerMaybeLoginDispatchSchema,
+    setFetchWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setPasswordLoginDispatchSchema,
     setUsernameLoginDispatchSchema,
@@ -22,22 +23,35 @@ const loginReducersMap: Map<
     LoginActions[keyof LoginActions],
     (state: LoginState, dispatch: LoginDispatch) => LoginState
 > = new Map([
-    [loginActions.setCacheWorker, loginReducer_setCacheWorker],
+    [loginActions.setCacheWorkerMaybe, loginReducer_setCacheWorkerMaybe],
+    [loginActions.setFetchWorkerMaybe, loginReducer_setFetchWorkerMaybe],
     [loginActions.setIsLoading, loginReducer_setIsLoading],
     [loginActions.setPassword, loginReducer_setPassword],
     [loginActions.setSafeErrorMaybe, loginReducer_setSafeErrorMaybe],
     [loginActions.setUsername, loginReducer_setUsername],
 ]);
 
-function loginReducer_setCacheWorker(
+function loginReducer_setCacheWorkerMaybe(
     state: LoginState,
     dispatch: LoginDispatch,
 ): LoginState {
     return parseDispatchAndSetState({
         dispatch,
-        key: "cacheWorker",
+        key: "cacheWorkerMaybe",
         state,
-        zSchema: setCacheWorkerLoginDispatchSchema,
+        zSchema: setCacheWorkerMaybeLoginDispatchSchema,
+    });
+}
+
+function loginReducer_setFetchWorkerMaybe(
+    state: LoginState,
+    dispatch: LoginDispatch,
+): LoginState {
+    return parseDispatchAndSetState({
+        dispatch,
+        key: "fetchWorkerMaybe",
+        state,
+        zSchema: setFetchWorkerMaybeLoginDispatchSchema,
     });
 }
 
@@ -91,6 +105,8 @@ function loginReducer_setUsername(
 
 export {
     loginReducer,
+    loginReducer_setCacheWorkerMaybe,
+    loginReducer_setFetchWorkerMaybe,
     loginReducer_setIsLoading,
     loginReducer_setPassword,
     loginReducer_setUsername,
