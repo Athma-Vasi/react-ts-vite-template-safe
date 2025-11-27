@@ -108,7 +108,7 @@ function createSafeErrorResult(
 function parseSyncSafe<Output = unknown>(
     { object, schema }: {
         object: Output;
-        schema: z.ZodType<Output>;
+        schema: z.ZodType;
     },
 ): SafeResult<Output> {
     try {
@@ -152,9 +152,9 @@ function parseDispatchAndSetState<
     },
     State extends Record<PropertyKey, unknown> = Record<PropertyKey, unknown>,
 >(
-    { dispatch, key, state, zSchema }: {
+    { dispatch, key, state, schema }: {
         dispatch: Dispatch;
-        zSchema: ZodObject<
+        schema: ZodObject<
             {
                 action: ZodLiteral<string>;
                 payload: Payload;
@@ -168,7 +168,7 @@ function parseDispatchAndSetState<
     const parsedDispatchResult = parseSyncSafe(
         {
             object: dispatch,
-            zSchema,
+            schema,
         },
     );
     if (parsedDispatchResult.err) {

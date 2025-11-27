@@ -3,6 +3,7 @@ import type { LoginActions } from "./actions";
 import { loginActions } from "./actions";
 import type { LoginDispatch } from "./dispatches";
 import {
+    setAsyncWorkerMaybeLoginDispatchSchema,
     setCacheWorkerMaybeLoginDispatchSchema,
     setFetchWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
@@ -23,6 +24,7 @@ const loginReducersMap: Map<
     LoginActions[keyof LoginActions],
     (state: LoginState, dispatch: LoginDispatch) => LoginState
 > = new Map([
+    [loginActions.setAsyncWorkerMaybe, loginReducer_setAsyncWorkerMaybe],
     [loginActions.setCacheWorkerMaybe, loginReducer_setCacheWorkerMaybe],
     [loginActions.setFetchWorkerMaybe, loginReducer_setFetchWorkerMaybe],
     [loginActions.setIsLoading, loginReducer_setIsLoading],
@@ -30,6 +32,18 @@ const loginReducersMap: Map<
     [loginActions.setSafeErrorMaybe, loginReducer_setSafeErrorMaybe],
     [loginActions.setUsername, loginReducer_setUsername],
 ]);
+
+function loginReducer_setAsyncWorkerMaybe(
+    state: LoginState,
+    dispatch: LoginDispatch,
+): LoginState {
+    return parseDispatchAndSetState({
+        dispatch,
+        key: "asyncWorkerMaybe",
+        state,
+        schema: setAsyncWorkerMaybeLoginDispatchSchema,
+    });
+}
 
 function loginReducer_setCacheWorkerMaybe(
     state: LoginState,
@@ -39,7 +53,7 @@ function loginReducer_setCacheWorkerMaybe(
         dispatch,
         key: "cacheWorkerMaybe",
         state,
-        zSchema: setCacheWorkerMaybeLoginDispatchSchema,
+        schema: setCacheWorkerMaybeLoginDispatchSchema,
     });
 }
 
@@ -51,7 +65,7 @@ function loginReducer_setFetchWorkerMaybe(
         dispatch,
         key: "fetchWorkerMaybe",
         state,
-        zSchema: setFetchWorkerMaybeLoginDispatchSchema,
+        schema: setFetchWorkerMaybeLoginDispatchSchema,
     });
 }
 
@@ -63,7 +77,7 @@ function loginReducer_setIsLoading(
         dispatch,
         key: "isLoading",
         state,
-        zSchema: setIsLoadingLoginDispatchSchema,
+        schema: setIsLoadingLoginDispatchSchema,
     });
 }
 
@@ -75,7 +89,7 @@ function loginReducer_setPassword(
         dispatch,
         key: "password",
         state,
-        zSchema: setPasswordLoginDispatchSchema,
+        schema: setPasswordLoginDispatchSchema,
     });
 }
 
@@ -87,7 +101,7 @@ function loginReducer_setSafeErrorMaybe(
         dispatch,
         key: "safeErrorMaybe",
         state,
-        zSchema: setIsLoadingLoginDispatchSchema,
+        schema: setIsLoadingLoginDispatchSchema,
     });
 }
 
@@ -99,12 +113,13 @@ function loginReducer_setUsername(
         dispatch,
         key: "username",
         state,
-        zSchema: setUsernameLoginDispatchSchema,
+        schema: setUsernameLoginDispatchSchema,
     });
 }
 
 export {
     loginReducer,
+    loginReducer_setAsyncWorkerMaybe,
     loginReducer_setCacheWorkerMaybe,
     loginReducer_setFetchWorkerMaybe,
     loginReducer_setIsLoading,

@@ -8,10 +8,11 @@ type MessageEventLoginCacheWorkerToMain<
 
 type MessageEventLoginCacheMainToWorker<Key = PropertyKey, Value = unknown> =
     MessageEvent<
-        {
+        | {
             kind: "set";
             payload: [key: Key, value: Value];
-        } | {
+        }
+        | {
             kind: "sendState";
             payload: [];
         }

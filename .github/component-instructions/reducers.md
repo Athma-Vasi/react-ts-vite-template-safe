@@ -64,7 +64,7 @@ function loginReducer_setForageWorker(
         dispatch,
         key: "forageWorker",
         state,
-        zSchema: setForageWorkerLoginDispatchSchema,
+        schema: setForageWorkerLoginDispatchSchema,
     });
 }
 
@@ -76,7 +76,7 @@ function loginReducer_setIsLoading(
         dispatch,
         key: "isLoading",
         state,
-        zSchema: setIsLoadingLoginDispatchSchema,
+        schema: setIsLoadingLoginDispatchSchema,
     });
 }
 
@@ -88,7 +88,7 @@ function loginReducer_setUsername(
         dispatch,
         key: "username",
         state,
-        zSchema: setUsernameLoginDispatchSchema,
+        schema: setUsernameLoginDispatchSchema,
     });
 }
 
@@ -148,7 +148,7 @@ function loginReducer_setIsLoading(
         dispatch,
         key: "isLoading",
         state,
-        zSchema: setIsLoadingLoginDispatchSchema,
+        schema: setIsLoadingLoginDispatchSchema,
     });
 }
 
@@ -160,7 +160,7 @@ function loginReducer_setUsername(
         dispatch,
         key: "username",
         state,
-        zSchema: setUsernameLoginDispatchSchema,
+        schema: setUsernameLoginDispatchSchema,
     });
 }
 
@@ -213,7 +213,7 @@ function loginReducer_setIsLoading(
         dispatch,
         key: "isLoading",
         state,
-        zSchema: setIsLoadingLoginDispatchSchema,
+        schema: setIsLoadingLoginDispatchSchema,
     });
 }
 
@@ -225,7 +225,7 @@ function loginReducer_setPassword( // ← New reducer function
         dispatch,
         key: "password",
         state,
-        zSchema: setPasswordLoginDispatchSchema,
+        schema: setPasswordLoginDispatchSchema,
     });
 }
 
@@ -237,7 +237,7 @@ function loginReducer_setUsername(
         dispatch,
         key: "username",
         state,
-        zSchema: setUsernameLoginDispatchSchema,
+        schema: setUsernameLoginDispatchSchema,
     });
 }
 
@@ -266,7 +266,7 @@ The `parseDispatchAndSetState` utility is a helper function that:
     dispatch: Dispatch,      // The dispatch action object
     key: keyof State,        // The state field to update (must match exactly!)
     state: State,            // The current state
-    zSchema: ZodSchema,      // The Zod schema for validation
+    schema: ZodSchema,      // The Zod schema for validation
 }
 ```
 
@@ -289,7 +289,7 @@ function loginReducer_setForageWorker(
         dispatch,
         key: "forageWorker", // ← Must be exactly "forageWorker"
         state,
-        zSchema: setForageWorkerLoginDispatchSchema,
+        schema: setForageWorkerLoginDispatchSchema,
     });
 }
 ```
@@ -344,7 +344,7 @@ function loginReducer_setForageWorker(
    function loginReducer_setUsername(...) {
        return parseDispatchAndSetState({
            key: "username",
-           zSchema: setPasswordLoginDispatchSchema,  // Wrong schema!
+           schema: setPasswordLoginDispatchSchema,  // Wrong schema!
        });
    }
 
@@ -352,7 +352,7 @@ function loginReducer_setForageWorker(
    function loginReducer_setUsername(...) {
        return parseDispatchAndSetState({
            key: "username",
-           zSchema: setUsernameLoginDispatchSchema,  // Correct schema
+           schema: setUsernameLoginDispatchSchema,  // Correct schema
        });
    }
    ```
@@ -388,7 +388,7 @@ function loginReducer_setForageWorker(
            dispatch,
            key: "username",
            state,
-           zSchema: setUsernameLoginDispatchSchema,
+           schema: setUsernameLoginDispatchSchema,
        });
    }
    ```
@@ -456,7 +456,7 @@ function dashboardReducer_setCurrentView(
         dispatch,
         key: "currentView",
         state,
-        zSchema: setCurrentViewDashboardDispatchSchema,
+        schema: setCurrentViewDashboardDispatchSchema,
     });
 }
 
@@ -468,7 +468,7 @@ function dashboardReducer_setErrorMessage(
         dispatch,
         key: "errorMessage",
         state,
-        zSchema: setErrorMessageDashboardDispatchSchema,
+        schema: setErrorMessageDashboardDispatchSchema,
     });
 }
 
@@ -480,7 +480,7 @@ function dashboardReducer_setIsLoading(
         dispatch,
         key: "isLoading",
         state,
-        zSchema: setIsLoadingDashboardDispatchSchema,
+        schema: setIsLoadingDashboardDispatchSchema,
     });
 }
 
@@ -492,7 +492,7 @@ function dashboardReducer_setMetricsData(
         dispatch,
         key: "metricsData",
         state,
-        zSchema: setMetricsDataDashboardDispatchSchema,
+        schema: setMetricsDataDashboardDispatchSchema,
     });
 }
 
@@ -504,7 +504,7 @@ function dashboardReducer_setSelectedFilters(
         dispatch,
         key: "selectedFilters",
         state,
-        zSchema: setSelectedFiltersDashboardDispatchSchema,
+        schema: setSelectedFiltersDashboardDispatchSchema,
     });
 }
 
@@ -516,7 +516,7 @@ function dashboardReducer_setWorker(
         dispatch,
         key: "worker",
         state,
-        zSchema: setWorkerDashboardDispatchSchema,
+        schema: setWorkerDashboardDispatchSchema,
     });
 }
 
@@ -572,7 +572,7 @@ function formReducer_setEmail(
         dispatch,
         key: "email",
         state,
-        zSchema: setEmailFormDispatchSchema,
+        schema: setEmailFormDispatchSchema,
     });
 }
 
@@ -584,7 +584,7 @@ function formReducer_setErrors(
         dispatch,
         key: "errors",
         state,
-        zSchema: setErrorsFormDispatchSchema,
+        schema: setErrorsFormDispatchSchema,
     });
 }
 
@@ -596,7 +596,7 @@ function formReducer_setIsSubmitting(
         dispatch,
         key: "isSubmitting",
         state,
-        zSchema: setIsSubmittingFormDispatchSchema,
+        schema: setIsSubmittingFormDispatchSchema,
     });
 }
 
@@ -608,7 +608,7 @@ function formReducer_setIsValid(
         dispatch,
         key: "isValid",
         state,
-        zSchema: setIsValidFormDispatchSchema,
+        schema: setIsValidFormDispatchSchema,
     });
 }
 
@@ -648,7 +648,7 @@ export {
            dispatch,
            key: "username",
            state,
-           zSchema: setUsernameLoginDispatchSchema,
+           schema: setUsernameLoginDispatchSchema,
        });
    }
    ```
