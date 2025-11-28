@@ -18,13 +18,13 @@ function ErrorFallback({
                 padding: "1rem",
                 border: "1px solid red",
                 borderRadius: "4px",
-                backgroundColor: "#ffe6e6",
+                // backgroundColor: "#ffe6e6",
             }}
         >
             <h2 style={{ color: "red" }}>Something went wrong:</h2>
             <pre
                 style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
-            >{String(error)}</pre>
+            >{error.err ? error.val.stack : "no error"}</pre>
             <button
                 onClick={resetErrorBoundary}
                 style={{

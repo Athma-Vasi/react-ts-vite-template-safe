@@ -1,6 +1,5 @@
 import { useEffect, useReducer, useRef } from "react";
 import { Some } from "ts-results";
-import { createSafeErrorResult } from "../../utils";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
@@ -102,18 +101,6 @@ function Login(
         };
     }, []);
 
-    useEffect(() => {
-        if (!password) {
-            return;
-        }
-        loginDispatch({
-            action: loginActions.setSafeErrorMaybe,
-            payload: Some(
-                createSafeErrorResult(new Error("Test Error")),
-            ),
-        });
-    }, [password]);
-
     if (safeErrorMaybe.some) {
         throw safeErrorMaybe.val;
     }
@@ -126,15 +113,16 @@ function Login(
                 type="text"
                 value={username}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    const { currentTarget: { value } } = event;
                     loginDispatch({
                         action: loginActions.setUsername,
-                        payload: event.currentTarget.value,
+                        payload: value,
                     });
                     errorDispatch({
                         action: errorActions.setChildComponentState,
                         payload: {
                             ...childComponentState,
-                            username,
+                            username: value,
                         },
                     });
                 }}
@@ -150,15 +138,16 @@ function Login(
                 type="password"
                 value={password}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    const { currentTarget: { value } } = event;
                     loginDispatch({
                         action: loginActions.setPassword,
-                        payload: event.currentTarget.value,
+                        payload: value,
                     });
                     errorDispatch({
                         action: errorActions.setChildComponentState,
                         payload: {
                             ...childComponentState,
-                            password,
+                            password: value,
                         },
                     });
                 }}
