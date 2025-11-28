@@ -8,6 +8,7 @@ import {
     setFetchWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setPasswordLoginDispatchSchema,
+    setSafeErrorMaybeLoginDispatchSchema,
     setUsernameLoginDispatchSchema,
 } from "./dispatches";
 import type { LoginState } from "./state";
@@ -101,7 +102,7 @@ function loginReducer_setSafeErrorMaybe(
         dispatch,
         key: "safeErrorMaybe",
         state,
-        schema: setIsLoadingLoginDispatchSchema,
+        schema: setSafeErrorMaybeLoginDispatchSchema,
     });
 }
 

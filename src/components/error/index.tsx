@@ -1,5 +1,6 @@
 import { Suspense, useReducer } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { ErrorDispatch } from "./dispatches";
 import ErrorFallback from "./ErrorFallback";
 import { errorReducer } from "./reducers";
 import { initialErrorState } from "./state";
@@ -11,26 +12,31 @@ function ErrorSuspenseHOC<
     >,
 >(
     Component: React.ComponentType<{
-        initialChildState: Props;
-        childComponentState: Record<string, unknown>;
-        errorDispatch: React.ActionDispatch<[dispatch: {
-            action: "setChildComponentState";
-            payload: Record<string, unknown>;
-        }]>;
+        // initialChildComponentState: Props;
+        childComponentState: Props;
+        errorDispatch: React.Dispatch<ErrorDispatch>;
     }>,
 ) {
-    return function ErrorSuspenseHOC(initialChildState: Props) {
+    return function ErrorSuspenseHOC(initialChildComponentState: Props) {
         const [
             errorState,
             errorDispatch,
         ] = useReducer(errorReducer, initialErrorState);
         const { childComponentState } = errorState;
+        const newChildComponentState = {
+            ...initialChildComponentState,
+            ...childComponentState,
+        };
 
         const propsModified = {
-            initialChildState,
-            childComponentState,
+            childComponentState: newChildComponentState,
             errorDispatch,
         };
+
+        console.group("ErrorSuspenseHOC Render");
+        console.log("errorState", errorState);
+        console.log("propsModified", propsModified);
+        console.groupEnd();
 
         return (
             <ErrorBoundary

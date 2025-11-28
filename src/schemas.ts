@@ -2,12 +2,12 @@ import { Err, Ok } from "ts-results";
 import z from "zod";
 
 function createOptionSchema<Value extends z.ZodTypeAny>(
-    value: Value,
+    val: Value,
 ) {
     return z.object({
         none: z.boolean(),
         some: z.boolean(),
-        value,
+        val,
     });
 }
 

@@ -175,6 +175,10 @@ function parseDispatchAndSetState<
             schema,
         },
     );
+    console.group("parseDispatchAndSetState");
+    console.log("dispatch", dispatch);
+    console.log("parsedDispatchResult", parsedDispatchResult);
+    console.groupEnd();
     if (parsedDispatchResult.err) {
         return state;
     }
