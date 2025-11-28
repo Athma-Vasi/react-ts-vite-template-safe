@@ -10,7 +10,9 @@ import z, {
     ZodNullable,
     ZodNumber,
     ZodObject,
+    ZodRecord,
     ZodString,
+    ZodUnknown,
 } from "zod";
 import type { $strip } from "zod/v4/core";
 import {
@@ -146,6 +148,7 @@ function parseDispatchAndSetState<
         | ZodCustom<Worker, Worker>
         | ZodCustom<FormData, FormData>
         | ZodNullable<ZodCustom<ErrImpl<unknown>, ErrImpl<unknown>>>
+        | ZodRecord<ZodString, ZodUnknown>
         | ZodObject = any,
     Dispatch extends { action: string; payload: unknown } = {
         action: string;
