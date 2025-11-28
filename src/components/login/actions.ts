@@ -7,7 +7,7 @@ type LoginActions = {
 };
 
 const loginActions: LoginActions = {
-    setAsyncWorkerMaybe: "setAsyncWorkerMaybe",
+    setForageWorkerMaybe: "setForageWorkerMaybe",
     setCacheWorkerMaybe: "setCacheWorkerMaybe",
     setFetchWorkerMaybe: "setFetchWorkerMaybe",
     setIsLoading: "setIsLoading",

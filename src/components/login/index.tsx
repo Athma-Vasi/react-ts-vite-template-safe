@@ -4,11 +4,11 @@ import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
 import { loginActions } from "./actions";
-import type { MessageEventLoginAsyncWorkerToMain } from "./asyncWorker";
-import AsyncWorker from "./asyncWorker?worker";
 import type { MessageEventLoginCacheWorkerToMain } from "./cacheWorker";
 import CacheWorker from "./cacheWorker?worker";
 import FetchWorker from "./fetchWorker?worker";
+import type { MessageEventLoginForageWorkerToMain } from "./forageWorker";
+import ForageWorker from "./forageWorker?worker";
 import { loginReducer } from "./reducers";
 import { initialLoginState, type LoginState } from "./state";
 
@@ -26,7 +26,7 @@ function Login(
         loginDispatch,
     ] = useReducer(loginReducer, childComponentState);
     const {
-        asyncWorkerMaybe,
+        forageWorkerMaybe,
         cacheWorkerMaybe,
         fetchWorkerMaybe,
         isLoading,
@@ -39,7 +39,7 @@ function Login(
 
     useEffect(() => {
         if (
-            asyncWorkerMaybe.some || cacheWorkerMaybe.some ||
+            forageWorkerMaybe.some || cacheWorkerMaybe.some ||
             fetchWorkerMaybe.some
         ) {
             return;
@@ -47,15 +47,15 @@ function Login(
 
         // initialize, add to state, and setup listeners for workers
 
-        const asyncWorker = new AsyncWorker();
+        const forageWorker = new ForageWorker();
         loginDispatch({
-            action: loginActions.setAsyncWorkerMaybe,
-            payload: Some(asyncWorker),
+            action: loginActions.setForageWorkerMaybe,
+            payload: Some(forageWorker),
         });
-        asyncWorker.onmessage = async (
-            event: MessageEventLoginAsyncWorkerToMain,
+        forageWorker.onmessage = async (
+            event: MessageEventLoginForageWorkerToMain,
         ) => {
-            // await handleMessageFromAsyncWorker(
+            // await handleMessageFromForageWorker(
             //     event,
             //     loginDispatch,
             //     errorDispatch,
@@ -94,7 +94,7 @@ function Login(
 
         // cleanup function to terminate workers on unmount
         return () => {
-            asyncWorker.terminate();
+            forageWorker.terminate();
             cacheWorker.terminate();
             fetchWorker.terminate();
             isComponentMountedRef.current = false;

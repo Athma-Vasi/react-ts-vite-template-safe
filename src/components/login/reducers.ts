@@ -3,9 +3,9 @@ import type { LoginActions } from "./actions";
 import { loginActions } from "./actions";
 import type { LoginDispatch } from "./dispatches";
 import {
-    setAsyncWorkerMaybeLoginDispatchSchema,
     setCacheWorkerMaybeLoginDispatchSchema,
     setFetchWorkerMaybeLoginDispatchSchema,
+    setForageWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setPasswordLoginDispatchSchema,
     setSafeErrorMaybeLoginDispatchSchema,
@@ -25,7 +25,7 @@ const loginReducersMap: Map<
     LoginActions[keyof LoginActions],
     (state: LoginState, dispatch: LoginDispatch) => LoginState
 > = new Map([
-    [loginActions.setAsyncWorkerMaybe, loginReducer_setAsyncWorkerMaybe],
+    [loginActions.setForageWorkerMaybe, loginReducer_setForageWorkerMaybe],
     [loginActions.setCacheWorkerMaybe, loginReducer_setCacheWorkerMaybe],
     [loginActions.setFetchWorkerMaybe, loginReducer_setFetchWorkerMaybe],
     [loginActions.setIsLoading, loginReducer_setIsLoading],
@@ -34,15 +34,15 @@ const loginReducersMap: Map<
     [loginActions.setUsername, loginReducer_setUsername],
 ]);
 
-function loginReducer_setAsyncWorkerMaybe(
+function loginReducer_setForageWorkerMaybe(
     state: LoginState,
     dispatch: LoginDispatch,
 ): LoginState {
     return parseDispatchAndSetState({
         dispatch,
-        key: "asyncWorkerMaybe",
+        key: "forageWorkerMaybe",
         state,
-        schema: setAsyncWorkerMaybeLoginDispatchSchema,
+        schema: setForageWorkerMaybeLoginDispatchSchema,
     });
 }
 
@@ -120,9 +120,9 @@ function loginReducer_setUsername(
 
 export {
     loginReducer,
-    loginReducer_setAsyncWorkerMaybe,
     loginReducer_setCacheWorkerMaybe,
     loginReducer_setFetchWorkerMaybe,
+    loginReducer_setForageWorkerMaybe,
     loginReducer_setIsLoading,
     loginReducer_setPassword,
     loginReducer_setUsername,

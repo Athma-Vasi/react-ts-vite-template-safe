@@ -2,8 +2,8 @@ import { type Err, None, type Option } from "ts-results";
 import type { SafeError } from "../../types";
 
 type LoginState = {
-    // handles all async operations
-    asyncWorkerMaybe: Option<Worker>;
+    // handles all storage operations
+    forageWorkerMaybe: Option<Worker>;
     // handles caching operations
     cacheWorkerMaybe: Option<Worker>;
     // handles fetch operations
@@ -15,7 +15,7 @@ type LoginState = {
 };
 
 const initialLoginState: LoginState = {
-    asyncWorkerMaybe: None,
+    forageWorkerMaybe: None,
     cacheWorkerMaybe: None,
     fetchWorkerMaybe: None,
     isLoading: false,

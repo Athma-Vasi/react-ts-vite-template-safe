@@ -3,8 +3,8 @@ import { z } from "zod";
 import { createOptionSchema } from "../../schemas";
 import { loginActions } from "./actions";
 
-const setAsyncWorkerMaybeLoginDispatchSchema = z.object({
-    action: z.literal("setAsyncWorkerMaybe"),
+const setForageWorkerMaybeLoginDispatchSchema = z.object({
+    action: z.literal("setForageWorkerMaybe"),
     payload: createOptionSchema(z.instanceof(Worker)),
 });
 
@@ -39,7 +39,7 @@ const setUsernameLoginDispatchSchema = z.object({
 });
 
 type LoginDispatch =
-    | z.infer<typeof setAsyncWorkerMaybeLoginDispatchSchema>
+    | z.infer<typeof setForageWorkerMaybeLoginDispatchSchema>
     | z.infer<typeof setCacheWorkerMaybeLoginDispatchSchema>
     | z.infer<typeof setFetchWorkerMaybeLoginDispatchSchema>
     | z.infer<typeof setIsLoadingLoginDispatchSchema>
@@ -48,9 +48,9 @@ type LoginDispatch =
     | z.infer<typeof setUsernameLoginDispatchSchema>;
 
 export {
-    setAsyncWorkerMaybeLoginDispatchSchema,
     setCacheWorkerMaybeLoginDispatchSchema,
     setFetchWorkerMaybeLoginDispatchSchema,
+    setForageWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setPasswordLoginDispatchSchema,
     setSafeErrorMaybeLoginDispatchSchema,
