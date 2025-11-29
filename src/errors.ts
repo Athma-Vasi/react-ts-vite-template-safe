@@ -64,6 +64,7 @@ class DatabaseError extends AppErrorBase {
 
     constructor(
         error?: unknown,
+        status: number = 500,
         message = "Database error occurred",
     ) {
         super(
@@ -73,7 +74,7 @@ class DatabaseError extends AppErrorBase {
                 ? error.stack
                 : "Stack trace not available",
             message,
-            Some(500),
+            Some(status),
         );
     }
 }
@@ -96,7 +97,11 @@ class NotFoundError extends AppErrorBase {
 class NetworkError extends AppErrorBase {
     readonly _tag = "NetworkError";
 
-    constructor(error?: unknown, message = "Network error occurred") {
+    constructor(
+        error?: unknown,
+        status: number = 503,
+        message = "Network error occurred",
+    ) {
         super(
             "NetworkError",
             error instanceof Error ? error.name : "UnknownError",
@@ -104,7 +109,7 @@ class NetworkError extends AppErrorBase {
                 ? error.stack
                 : "Stack trace not available",
             message,
-            Some(503),
+            Some(status),
         );
     }
 }

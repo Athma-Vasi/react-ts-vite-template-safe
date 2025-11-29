@@ -1,10 +1,9 @@
 import { parseDispatchAndSetState } from "../../utils";
-import type { ErrorActions } from "./actions.ts";
-import { errorActions } from "./actions.ts";
-import type { ErrorDispatch } from "./dispatches.ts";
-import { setChildComponentStateErrorDispatchSchema } from "./dispatches.ts";
-
-import type { ErrorState } from "./state.ts";
+import type { ErrorActions } from "./actions";
+import { errorActions } from "./actions";
+import type { ErrorDispatch } from "./dispatches";
+import { setChildComponentStateErrorDispatchSchema } from "./dispatches";
+import type { ErrorState } from "./state";
 
 function errorReducer(
     state: ErrorState,

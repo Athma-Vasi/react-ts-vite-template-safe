@@ -179,26 +179,6 @@ function Login(
                             password: value,
                         },
                     });
-
-                    sendMessageToWorker<MessageEventLoginCacheMainToWorker>({
-                        actions: loginActions,
-                        dispatch: loginDispatch,
-                        message: {
-                            kind: "set",
-                            payload: ["password", value],
-                        },
-                        workerMaybe: cacheWorkerMaybe,
-                    });
-
-                    sendMessageToWorker<MessageEventLoginForageMainToWorker>({
-                        actions: loginActions,
-                        dispatch: loginDispatch,
-                        message: {
-                            kind: "set",
-                            payload: ["password", value],
-                        },
-                        workerMaybe: forageWorkerMaybe,
-                    });
                 }}
             />
         </div>

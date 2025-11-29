@@ -354,7 +354,7 @@ async function retryFetchSafe<
             if (attempt === retries) {
                 return Promise.resolve(
                     createSafeErrorResult(
-                        new NetworkError(error, "Max retries reached"),
+                        new NetworkError(error, 503, "Max retries reached"),
                     ),
                 );
             }
