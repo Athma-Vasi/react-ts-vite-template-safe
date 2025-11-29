@@ -408,6 +408,24 @@ class WorkerMessageError extends AppErrorBase {
     }
 }
 
+class WorkerMessageHandlerError extends AppErrorBase {
+    readonly _tag = "WorkerMessageHandlerError";
+
+    constructor(
+        error?: unknown,
+        message = "Worker message handler error occurred",
+    ) {
+        super(
+            "WorkerMessageHandlerError",
+            error instanceof Error ? error.name : "UnknownError",
+            error instanceof Error && error.stack
+                ? error.stack
+                : "Stack trace not available",
+            message,
+        );
+    }
+}
+
 export {
     AbortError,
     AppErrorBase,
@@ -434,4 +452,5 @@ export {
     ValidationError,
     WorkerError,
     WorkerMessageError,
+    WorkerMessageHandlerError,
 };

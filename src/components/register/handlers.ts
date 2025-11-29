@@ -1,14 +1,19 @@
 import React from "react";
+import { None, Some } from "ts-results";
+import { WorkerMessageHandlerError } from "../../errors";
+import { createSafeErrorResult } from "../../utils";
 import type { ErrorDispatch } from "../error/dispatches";
+import { registerActions } from "./actions";
 import type { RegisterDispatch } from "./dispatches";
+import type { MessageEventRegisterFetchWorkerToMain } from "./fetchWorker";
 import type { MessageEventRegisterForageWorkerToMain } from "./forageWorker";
 
 async function handleMessageFromForageWorker(
-    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
         event: MessageEventRegisterForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        RegisterDispatch: React.Dispatch<RegisterDispatch>;
+        registerDispatch: React.Dispatch<RegisterDispatch>;
     },
 ) {
     if (!isComponentMountedRef.current) {
@@ -23,11 +28,11 @@ async function handleMessageFromForageWorker(
 }
 
 async function handleMessageFromCacheWorker(
-    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
         event: MessageEventRegisterForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        RegisterDispatch: React.Dispatch<RegisterDispatch>;
+        registerDispatch: React.Dispatch<RegisterDispatch>;
     },
 ) {
     if (!isComponentMountedRef.current) {
@@ -42,22 +47,64 @@ async function handleMessageFromCacheWorker(
 }
 
 async function handleMessageFromFetchWorker(
-    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventRegisterForageWorkerToMain;
+        event: MessageEventRegisterFetchWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        RegisterDispatch: React.Dispatch<RegisterDispatch>;
+        registerDispatch: React.Dispatch<RegisterDispatch>;
     },
-) {
+): Promise<None> {
     if (!isComponentMountedRef.current) {
-        return;
+        return None;
     }
 
-    const { data } = event;
+    try {
+        const { data } = event;
 
-    console.group("handleMessageFromFetchWorker");
-    console.log("data", data);
-    console.groupEnd();
+        if (data.err) {
+            registerDispatch({
+                action: registerActions.setSafeErrorMaybe,
+                payload: Some(data),
+            });
+            return None;
+        }
+        const dataMaybe = data.val;
+        if (dataMaybe.none) {
+            registerDispatch({
+                action: registerActions.setResponseDataMaybe,
+                payload: Some([]),
+            });
+            return None;
+        }
+
+        const responseData = dataMaybe.val;
+
+        registerDispatch({
+            action: registerActions.setIsLoading,
+            payload: false,
+        });
+
+        registerDispatch({
+            action: registerActions.setResponseDataMaybe,
+            payload: Some(
+                Array.isArray(responseData) ? responseData : [responseData],
+            ),
+        });
+        return None;
+    } catch (error) {
+        registerDispatch({
+            action: registerActions.setSafeErrorMaybe,
+            payload: Some(
+                createSafeErrorResult(
+                    new WorkerMessageHandlerError(
+                        error,
+                        "Error handling message from Fetch Worker",
+                    ),
+                ),
+            ),
+        });
+        return None;
+    }
 }
 
 export {

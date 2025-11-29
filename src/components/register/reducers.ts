@@ -7,6 +7,7 @@ import {
     setForageWorkerMaybeRegisterDispatchSchema,
     setIsLoadingRegisterDispatchSchema,
     setPasswordRegisterDispatchSchema,
+    setResponseDataMaybeRegisterDispatchSchema,
     setSafeErrorMaybeRegisterDispatchSchema,
     setUsernameRegisterDispatchSchema,
 } from "./dispatches";
@@ -32,6 +33,10 @@ const registerReducersMap: Map<
     [registerActions.setFetchWorkerMaybe, registerReducer_setFetchWorkerMaybe],
     [registerActions.setIsLoading, registerReducer_setIsLoading],
     [registerActions.setPassword, registerReducer_setPassword],
+    [
+        registerActions.setResponseDataMaybe,
+        registerReducer_setResponseDataMaybe,
+    ],
     [registerActions.setSafeErrorMaybe, registerReducer_setSafeErrorMaybe],
     [registerActions.setUsername, registerReducer_setUsername],
 ]);
@@ -96,6 +101,18 @@ function registerReducer_setPassword(
     });
 }
 
+function registerReducer_setResponseDataMaybe(
+    state: RegisterState,
+    dispatch: RegisterDispatch,
+): RegisterState {
+    return parseDispatchAndSetState({
+        dispatch,
+        key: "responseDataMaybe",
+        state,
+        schema: setResponseDataMaybeRegisterDispatchSchema,
+    });
+}
+
 function registerReducer_setSafeErrorMaybe(
     state: RegisterState,
     dispatch: RegisterDispatch,
@@ -127,6 +144,8 @@ export {
     registerReducer_setForageWorkerMaybe,
     registerReducer_setIsLoading,
     registerReducer_setPassword,
+    registerReducer_setResponseDataMaybe,
+    registerReducer_setSafeErrorMaybe,
     registerReducer_setUsername,
     registerReducersMap,
 };

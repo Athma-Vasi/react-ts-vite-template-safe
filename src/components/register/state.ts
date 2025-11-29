@@ -1,5 +1,5 @@
 import { type Err, None, type Option } from "ts-results";
-import type { SafeError } from "../../types";
+import type { ResponseData, SafeError } from "../../types";
 
 type RegisterState = {
     // handles all storage operations
@@ -10,6 +10,7 @@ type RegisterState = {
     fetchWorkerMaybe: Option<Worker>;
     isLoading: boolean;
     password: string;
+    responseDataMaybe: Option<Array<ResponseData>>;
     safeErrorMaybe: Option<Err<SafeError>>;
     username: string;
 };
@@ -20,6 +21,7 @@ const initialRegisterState: RegisterState = {
     fetchWorkerMaybe: None,
     isLoading: false,
     password: "",
+    responseDataMaybe: None,
     safeErrorMaybe: None,
     username: "",
 };

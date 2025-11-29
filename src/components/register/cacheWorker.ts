@@ -47,12 +47,6 @@ type MessageEventMainToRegisterCacheWorker<Key = string, Value = unknown> =
         try {
             const { kind, payload } = event.data;
 
-            console.group("Register Cache Worker Message Received");
-            console.log("kind", kind);
-            console.log("payload", payload);
-            console.log("cache before", Object.fromEntries(cache));
-            console.groupEnd();
-
             switch (kind) {
                 case "get": {
                     const [key] = payload;

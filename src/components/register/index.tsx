@@ -1,6 +1,7 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer } from "react";
 import { Some } from "ts-results";
-import { sendMessageToWorker } from "../../utils";
+import { useMountedRef } from "../../hooks/useMountedRef";
+import { createSafeErrorResult, sendMessageToWorker } from "../../utils";
 import { AccessibleTextInput } from "../accessibleInputs/AccessibleTextInput";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
@@ -11,6 +12,10 @@ import type {
     MessageEventRegisterCacheWorkerToMain,
 } from "./cacheWorker";
 import CacheWorker from "./cacheWorker?worker";
+import type {
+    MessageEventMainToRegisterFetchWorker,
+    MessageEventRegisterFetchWorkerToMain,
+} from "./fetchWorker";
 import FetchWorker from "./fetchWorker?worker";
 import type {
     MessageEventMainToRegisterForageWorker,
@@ -39,8 +44,8 @@ function Register(
         RegisterProps,
 ) {
     const [
-        RegisterState,
-        RegisterDispatch,
+        registerState,
+        registerDispatch,
     ] = useReducer(
         registerReducer,
         backupStateFromErrorHOC ?? initialRegisterState,
@@ -51,11 +56,12 @@ function Register(
         fetchWorkerMaybe,
         isLoading,
         password,
+        responseDataMaybe,
         safeErrorMaybe,
         username,
-    } = RegisterState;
+    } = registerState;
 
-    const isComponentMountedRef = useRef(true);
+    const isComponentMountedRef = useMountedRef();
 
     useEffect(() => {
         if (
@@ -68,7 +74,7 @@ function Register(
         // initialize, add to state, and setup listeners for workers
 
         const forageWorker = new ForageWorker();
-        RegisterDispatch({
+        registerDispatch({
             action: registerActions.setForageWorkerMaybe,
             payload: Some(forageWorker),
         });
@@ -80,13 +86,13 @@ function Register(
                     errorDispatch,
                     event,
                     isComponentMountedRef,
-                    RegisterDispatch,
+                    registerDispatch,
                 },
             );
         };
 
         const cacheWorker = new CacheWorker();
-        RegisterDispatch({
+        registerDispatch({
             action: registerActions.setCacheWorkerMaybe,
             payload: Some(cacheWorker),
         });
@@ -98,25 +104,25 @@ function Register(
                     errorDispatch,
                     event,
                     isComponentMountedRef,
-                    RegisterDispatch,
+                    registerDispatch,
                 },
             );
         };
 
         const fetchWorker = new FetchWorker();
-        RegisterDispatch({
+        registerDispatch({
             action: registerActions.setFetchWorkerMaybe,
             payload: Some(fetchWorker),
         });
         fetchWorker.onmessage = async (
-            event: MessageEventRegisterCacheWorkerToMain,
+            event: MessageEventRegisterFetchWorkerToMain,
         ) => {
             await handleMessageFromFetchWorker(
                 {
                     errorDispatch,
                     event,
                     isComponentMountedRef,
-                    RegisterDispatch,
+                    registerDispatch,
                 },
             );
         };
@@ -130,6 +136,23 @@ function Register(
         };
     }, []);
 
+    useEffect(() => {
+        // simulate random error for testing ErrorBoundary HOC
+        const isError = Math.random() < 0.25;
+        if (!isError || !username) {
+            return;
+        }
+
+        registerDispatch({
+            action: registerActions.setSafeErrorMaybe,
+            payload: Some(
+                createSafeErrorResult(
+                    new Error("Random simulated error in Register component."),
+                ),
+            ),
+        });
+    }, [username]);
+
     if (safeErrorMaybe.some) {
         throw safeErrorMaybe.val;
     }
@@ -138,16 +161,17 @@ function Register(
         <AccessibleTextInput
             action={registerActions.setUsername}
             errorAction={errorActions.setChildComponentState}
-            dispatch={RegisterDispatch}
+            dispatch={registerDispatch}
             errorDispatch={errorDispatch}
             label="Username:"
+            loadingAction={registerActions.setIsLoading}
             name="username"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
                 sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
                     actions: registerActions,
-                    dispatch: RegisterDispatch,
+                    dispatch: registerDispatch,
                     message: {
                         kind: "set",
                         payload: ["username", value],
@@ -157,7 +181,7 @@ function Register(
 
                 sendMessageToWorker<MessageEventMainToRegisterForageWorker>({
                     actions: registerActions,
-                    dispatch: RegisterDispatch,
+                    dispatch: registerDispatch,
                     message: {
                         kind: "set",
                         payload: ["username", value],
@@ -174,20 +198,21 @@ function Register(
     const passwordElement = (
         <AccessibleTextInput
             action={registerActions.setPassword}
-            dispatch={RegisterDispatch}
+            dispatch={registerDispatch}
             errorAction={errorActions.setChildComponentState}
             errorDispatch={errorDispatch}
             label="Password:"
+            loadingAction={registerActions.setIsLoading}
             name="password"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
                 sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
                     actions: registerActions,
-                    dispatch: RegisterDispatch,
+                    dispatch: registerDispatch,
                     message: {
                         kind: "set",
-                        payload: ["username", value],
+                        payload: ["password", value],
                     },
                     workerMaybe: cacheWorkerMaybe,
                 });
@@ -201,8 +226,30 @@ function Register(
     const submitButtonElement = (
         <button
             disabled={isLoading}
-            onClick={() => {
-                // handle submit logic
+            onClick={(
+                event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+            ) => {
+                event.preventDefault();
+
+                registerDispatch({
+                    action: registerActions.setIsLoading,
+                    payload: true,
+                });
+
+                sendMessageToWorker<MessageEventMainToRegisterFetchWorker>({
+                    actions: registerActions,
+                    dispatch: registerDispatch,
+                    message: {
+                        requestInit: {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        },
+                        url: "https://jsonplaceholder.typicode.com/posts",
+                    },
+                    workerMaybe: fetchWorkerMaybe,
+                });
             }}
             type="button"
         >
@@ -210,8 +257,30 @@ function Register(
         </button>
     );
 
+    const responseDataElement = responseDataMaybe.some
+        ? (
+            <div className="response-data-container">
+                {responseDataMaybe.val.map((dataItem) => {
+                    const { body, id, title, userId } = dataItem;
+
+                    return (
+                        <div
+                            className="response-data-item-card"
+                            key={`response-data-item-${id}`}
+                        >
+                            <h3>{`Title: ${title}`}</h3>
+                            <p>{`Body: ${body}`}</p>
+                            <p>{`User ID: ${userId}`}</p>
+                            <p>{`ID: ${id}`}</p>
+                        </div>
+                    );
+                })}
+            </div>
+        )
+        : null;
+
     console.group("Register Render");
-    console.log("RegisterState", RegisterState);
+    console.log("registerState", registerState);
     console.log("childComponentState", backupStateFromErrorHOC);
     console.groupEnd();
 
@@ -221,6 +290,7 @@ function Register(
             {usernameElement}
             {passwordElement}
             {submitButtonElement}
+            {responseDataElement}
         </div>
     );
 }

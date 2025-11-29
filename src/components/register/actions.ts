@@ -13,6 +13,7 @@ const registerActions: RegisterActions = {
     setFetchWorkerMaybe: "setFetchWorkerMaybe",
     setIsLoading: "setIsLoading",
     setPassword: "setPassword",
+    setResponseDataMaybe: "setResponseDataMaybe",
     setSafeErrorMaybe: "setSafeErrorMaybe",
     setUsername: "setUsername",
 };

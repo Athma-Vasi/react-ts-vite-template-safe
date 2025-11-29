@@ -31,9 +31,17 @@ type SafeError = {
 
 type ValidationRegexes = Array<[RegExp, string]>;
 
+type ResponseData = {
+    body: string;
+    id: number;
+    title: string;
+    userId: number;
+};
+
 export type {
     NonNullableObject,
     Prettify,
+    ResponseData,
     SafeError,
     SafeResult,
     SafeSuccess,

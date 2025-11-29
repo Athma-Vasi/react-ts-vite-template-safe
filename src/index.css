@@ -260,4 +260,29 @@ input:focus {
   flex-direction: column;
   align-items: center;
   padding: var(--padding);
+
+  .response-data-container {
+    margin-top: var(--spacing-lg);
+    padding: var(--padding);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    max-width: 600px;
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .response-data-item-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+      background-color: var(--color-background);
+      box-shadow: var(--shadow-sm);
+    }
+  }
 }

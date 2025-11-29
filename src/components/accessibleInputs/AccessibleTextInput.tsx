@@ -24,6 +24,7 @@ type AccessibleTextInputProps<
         }]>;
         hideLabel?: boolean;
         label?: string;
+        loadingAction: string;
         name: string;
         validationRegexes?: Array<[RegExp, string]>;
         value: Payload;
@@ -49,6 +50,7 @@ function AccessibleTextInput<
         dataTestId = `accessible-text-input-${name}`,
         hideLabel = false,
         label = name,
+        loadingAction,
         onBlur = () => {},
         onChange = () => {},
         onFocus = () => {},
@@ -98,6 +100,11 @@ function AccessibleTextInput<
                 dispatch({
                     action,
                     payload: value as Payload,
+                } as Dispatch);
+
+                dispatch({
+                    action: loadingAction,
+                    payload: true,
                 } as Dispatch);
 
                 errorDispatch({

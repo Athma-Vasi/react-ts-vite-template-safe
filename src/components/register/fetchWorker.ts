@@ -12,25 +12,14 @@ import {
     parseSyncSafe,
     retryFetchSafe,
 } from "../../utils";
+import { response_data_schema } from "./dispatches";
 
 // mapping of url to zod schema for decoding json response
 // as zod schemas cannot be serialized
 const json_schema_decode_table: Record<string, z.ZodType> = {
     // placeholder example for demonstration purposes
-    "https://jsonplaceholder.typicode.com/posts/1": z.object({
-        userId: z.number(),
-        id: z.number(),
-        title: z.string(),
-        body: z.string(),
-    }),
-    "https://jsonplaceholder.typicode.com/posts": z.array(
-        z.object({
-            userId: z.number(),
-            id: z.number(),
-            title: z.string(),
-            body: z.string(),
-        }),
-    ),
+    "https://jsonplaceholder.typicode.com/posts/1": response_data_schema,
+    "https://jsonplaceholder.typicode.com/posts": response_data_schema,
 };
 
 type MessageEventRegisterFetchWorkerToMain<
