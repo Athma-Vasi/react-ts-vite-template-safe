@@ -1,7 +1,7 @@
 import { type Err, None, type Option } from "ts-results";
 import type { SafeError } from "../../types";
 
-type LoginState = {
+type RegisterState = {
     // handles all storage operations
     forageWorkerMaybe: Option<Worker>;
     // handles caching operations
@@ -14,7 +14,7 @@ type LoginState = {
     username: string;
 };
 
-const initialLoginState: LoginState = {
+const initialRegisterState: RegisterState = {
     forageWorkerMaybe: None,
     cacheWorkerMaybe: None,
     fetchWorkerMaybe: None,
@@ -24,5 +24,5 @@ const initialLoginState: LoginState = {
     username: "",
 };
 
-export { initialLoginState };
-export type { LoginState };
+export { initialRegisterState };
+export type { RegisterState };

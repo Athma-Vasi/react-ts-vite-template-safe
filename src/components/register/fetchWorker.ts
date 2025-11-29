@@ -33,24 +33,24 @@ const json_schema_decode_table: Record<string, z.ZodType> = {
     ),
 };
 
-type MessageEventLoginFetchWorkerToMain<
+type MessageEventRegisterFetchWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventMainToLoginFetchWorker = MessageEvent<{
+type MessageEventMainToRegisterFetchWorker = MessageEvent<{
     // url to fetch
     url: string;
     requestInit: RequestInit;
 }>;
 
 self.onmessage = async (
-    event: MessageEventMainToLoginFetchWorker,
+    event: MessageEventMainToRegisterFetchWorker,
 ) => {
     if (!event.data) {
         self.postMessage(
             createSafeErrorResult(
                 new WorkerMessageError(
-                    "No data received in Login Fetch worker message",
+                    "No data received in Register Fetch worker message",
                 ),
             ),
         );
@@ -112,12 +112,12 @@ self.onmessage = async (
 };
 
 self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in Login Fetch worker:", event);
+    console.error("Unhandled error in Register Fetch worker:", event);
     self.postMessage(
         createSafeErrorResult(
             new WorkerError(
                 event,
-                "Unhandled error in Login Fetch worker",
+                "Unhandled error in Register Fetch worker",
             ),
         ),
     );
@@ -126,20 +126,20 @@ self.onerror = (event: string | Event) => {
 
 self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
     console.error(
-        "Unhandled promise rejection in Login Fetch worker:",
+        "Unhandled promise rejection in Register Fetch worker:",
         event.reason,
     );
     self.postMessage(
         createSafeErrorResult(
             new PromiseRejectionError(
                 event.reason,
-                "Unhandled promise rejection in Login Fetch worker",
+                "Unhandled promise rejection in Register Fetch worker",
             ),
         ),
     );
 });
 
 export type {
-    MessageEventLoginFetchWorkerToMain,
-    MessageEventMainToLoginFetchWorker,
+    MessageEventMainToRegisterFetchWorker,
+    MessageEventRegisterFetchWorkerToMain,
 };

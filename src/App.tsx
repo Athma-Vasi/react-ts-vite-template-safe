@@ -1,7 +1,7 @@
-import Login from "./components/login";
+import Register from "./components/register";
 
 function App() {
-  return <Login />;
+  return <Register />;
 }
 
 export default App;

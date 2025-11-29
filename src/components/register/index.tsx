@@ -5,16 +5,16 @@ import { AccessibleTextInput } from "../accessibleInputs/AccessibleTextInput";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
-import { loginActions } from "./actions";
+import { registerActions } from "./actions";
 import type {
-    MessageEventLoginCacheWorkerToMain,
-    MessageEventMainToLoginCacheWorker,
+    MessageEventMainToRegisterCacheWorker,
+    MessageEventRegisterCacheWorkerToMain,
 } from "./cacheWorker";
 import CacheWorker from "./cacheWorker?worker";
 import FetchWorker from "./fetchWorker?worker";
 import type {
-    MessageEventLoginForageWorkerToMain,
-    MessageEventMainToLoginForageWorker,
+    MessageEventMainToRegisterForageWorker,
+    MessageEventRegisterForageWorkerToMain,
 } from "./forageWorker";
 import ForageWorker from "./forageWorker?worker";
 import {
@@ -22,25 +22,29 @@ import {
     handleMessageFromFetchWorker,
     handleMessageFromForageWorker,
 } from "./handlers";
-import { loginReducer } from "./reducers";
+import { registerReducer } from "./reducers";
 import {
     password_validation_regexes,
     username_validation_regexes,
 } from "./regexes";
-import { initialLoginState, type LoginState } from "./state";
+import { initialRegisterState, type RegisterState } from "./state";
 
-type LoginProps = {
+type RegisterProps = {
     // this component's back-up state from ErrorBoundary
-    childComponentState: LoginState;
+    childComponentState: RegisterState;
     errorDispatch: React.ActionDispatch<[dispatch: ErrorDispatch]>;
 };
-function Login(
-    { childComponentState: backupStateFromErrorHOC, errorDispatch }: LoginProps,
+function Register(
+    { childComponentState: backupStateFromErrorHOC, errorDispatch }:
+        RegisterProps,
 ) {
     const [
-        loginState,
-        loginDispatch,
-    ] = useReducer(loginReducer, backupStateFromErrorHOC ?? initialLoginState);
+        RegisterState,
+        RegisterDispatch,
+    ] = useReducer(
+        registerReducer,
+        backupStateFromErrorHOC ?? initialRegisterState,
+    );
     const {
         forageWorkerMaybe,
         cacheWorkerMaybe,
@@ -49,7 +53,7 @@ function Login(
         password,
         safeErrorMaybe,
         username,
-    } = loginState;
+    } = RegisterState;
 
     const isComponentMountedRef = useRef(true);
 
@@ -64,41 +68,56 @@ function Login(
         // initialize, add to state, and setup listeners for workers
 
         const forageWorker = new ForageWorker();
-        loginDispatch({
-            action: loginActions.setForageWorkerMaybe,
+        RegisterDispatch({
+            action: registerActions.setForageWorkerMaybe,
             payload: Some(forageWorker),
         });
         forageWorker.onmessage = async (
-            event: MessageEventLoginForageWorkerToMain,
+            event: MessageEventRegisterForageWorkerToMain,
         ) => {
             await handleMessageFromForageWorker(
-                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+                {
+                    errorDispatch,
+                    event,
+                    isComponentMountedRef,
+                    RegisterDispatch,
+                },
             );
         };
 
         const cacheWorker = new CacheWorker();
-        loginDispatch({
-            action: loginActions.setCacheWorkerMaybe,
+        RegisterDispatch({
+            action: registerActions.setCacheWorkerMaybe,
             payload: Some(cacheWorker),
         });
         cacheWorker.onmessage = async (
-            event: MessageEventLoginCacheWorkerToMain,
+            event: MessageEventRegisterCacheWorkerToMain,
         ) => {
             await handleMessageFromCacheWorker(
-                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+                {
+                    errorDispatch,
+                    event,
+                    isComponentMountedRef,
+                    RegisterDispatch,
+                },
             );
         };
 
         const fetchWorker = new FetchWorker();
-        loginDispatch({
-            action: loginActions.setFetchWorkerMaybe,
+        RegisterDispatch({
+            action: registerActions.setFetchWorkerMaybe,
             payload: Some(fetchWorker),
         });
         fetchWorker.onmessage = async (
-            event: MessageEventLoginCacheWorkerToMain,
+            event: MessageEventRegisterCacheWorkerToMain,
         ) => {
             await handleMessageFromFetchWorker(
-                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+                {
+                    errorDispatch,
+                    event,
+                    isComponentMountedRef,
+                    RegisterDispatch,
+                },
             );
         };
 
@@ -117,18 +136,18 @@ function Login(
 
     const usernameElement = (
         <AccessibleTextInput
-            action={loginActions.setUsername}
+            action={registerActions.setUsername}
             errorAction={errorActions.setChildComponentState}
-            dispatch={loginDispatch}
+            dispatch={RegisterDispatch}
             errorDispatch={errorDispatch}
             label="Username:"
             name="username"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
-                sendMessageToWorker<MessageEventMainToLoginCacheWorker>({
-                    actions: loginActions,
-                    dispatch: loginDispatch,
+                sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
+                    actions: registerActions,
+                    dispatch: RegisterDispatch,
                     message: {
                         kind: "set",
                         payload: ["username", value],
@@ -136,9 +155,9 @@ function Login(
                     workerMaybe: cacheWorkerMaybe,
                 });
 
-                sendMessageToWorker<MessageEventMainToLoginForageWorker>({
-                    actions: loginActions,
-                    dispatch: loginDispatch,
+                sendMessageToWorker<MessageEventMainToRegisterForageWorker>({
+                    actions: registerActions,
+                    dispatch: RegisterDispatch,
                     message: {
                         kind: "set",
                         payload: ["username", value],
@@ -154,8 +173,8 @@ function Login(
 
     const passwordElement = (
         <AccessibleTextInput
-            action={loginActions.setPassword}
-            dispatch={loginDispatch}
+            action={registerActions.setPassword}
+            dispatch={RegisterDispatch}
             errorAction={errorActions.setChildComponentState}
             errorDispatch={errorDispatch}
             label="Password:"
@@ -163,9 +182,9 @@ function Login(
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
-                sendMessageToWorker<MessageEventMainToLoginCacheWorker>({
-                    actions: loginActions,
-                    dispatch: loginDispatch,
+                sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
+                    actions: registerActions,
+                    dispatch: RegisterDispatch,
                     message: {
                         kind: "set",
                         payload: ["username", value],
@@ -179,22 +198,22 @@ function Login(
         />
     );
 
-    console.group("Login Render");
-    console.log("loginState", loginState);
+    console.group("Register Render");
+    console.log("RegisterState", RegisterState);
     console.log("childComponentState", backupStateFromErrorHOC);
     console.groupEnd();
 
     return (
-        <div className="login-component">
-            <h2>Login Component</h2>
+        <div className="register-component">
+            <h2>Register Component</h2>
             {usernameElement}
             {passwordElement}
         </div>
     );
 }
 
-function LoginWrapper() {
-    return ErrorSuspenseHOC(Login)(initialLoginState);
+function RegisterWrapper() {
+    return ErrorSuspenseHOC(Register)(initialRegisterState);
 }
 
-export default LoginWrapper;
+export default RegisterWrapper;

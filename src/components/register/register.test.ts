@@ -5,24 +5,24 @@ import {
     valid_booleans,
     valid_strings,
 } from "../../constants";
-import { loginActions } from "./actions";
+import { registerActions } from "./actions";
 import {
-    loginReducer_setIsLoading,
-    loginReducer_setPassword,
-    loginReducer_setUsername,
+    registerReducer_setIsLoading,
+    registerReducer_setPassword,
+    registerReducer_setUsername,
 } from "./reducers";
-import { initialLoginState } from "./state";
+import { initialRegisterState } from "./state";
 
-describe("loginReducer", () => {
-    describe(loginActions.setIsLoading, () => {
+describe("RegisterReducer", () => {
+    describe(registerActions.setIsLoading, () => {
         it("should allow valid boolean values", () => {
             valid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setIsLoading,
+                    action: registerActions.setIsLoading,
                     payload: value,
                 };
-                const state = loginReducer_setIsLoading(
-                    initialLoginState,
+                const state = registerReducer_setIsLoading(
+                    initialRegisterState,
                     dispatch,
                 );
                 expect(state.isLoading).toBe(value);
@@ -30,15 +30,15 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid boolean values", () => {
-            const initialIsLoading = initialLoginState.isLoading;
+            const initialIsLoading = initialRegisterState.isLoading;
 
             invalid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setIsLoading,
+                    action: registerActions.setIsLoading,
                     payload: value,
                 };
-                const state = loginReducer_setIsLoading(
-                    initialLoginState,
+                const state = registerReducer_setIsLoading(
+                    initialRegisterState,
                     dispatch as any,
                 );
                 expect(state.isLoading).toBe(initialIsLoading);
@@ -46,15 +46,15 @@ describe("loginReducer", () => {
         });
     });
 
-    describe(loginActions.setPassword, () => {
+    describe(registerActions.setPassword, () => {
         it("should allow valid string values", () => {
             valid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setPassword,
+                    action: registerActions.setPassword,
                     payload: value,
                 };
-                const state = loginReducer_setPassword(
-                    initialLoginState,
+                const state = registerReducer_setPassword(
+                    initialRegisterState,
                     dispatch,
                 );
                 expect(state.password).toBe(value);
@@ -62,15 +62,15 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid string values", () => {
-            const initialPassword = initialLoginState.password;
+            const initialPassword = initialRegisterState.password;
 
             invalid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setPassword,
+                    action: registerActions.setPassword,
                     payload: value,
                 };
-                const state = loginReducer_setPassword(
-                    initialLoginState,
+                const state = registerReducer_setPassword(
+                    initialRegisterState,
                     dispatch as any,
                 );
                 expect(state.password).toBe(initialPassword);
@@ -78,15 +78,15 @@ describe("loginReducer", () => {
         });
     });
 
-    describe(loginActions.setUsername, () => {
+    describe(registerActions.setUsername, () => {
         it("should allow valid string values", () => {
             valid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setUsername,
+                    action: registerActions.setUsername,
                     payload: value,
                 };
-                const state = loginReducer_setUsername(
-                    initialLoginState,
+                const state = registerReducer_setUsername(
+                    initialRegisterState,
                     dispatch,
                 );
                 expect(state.username).toBe(value);
@@ -94,15 +94,15 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid string values", () => {
-            const initialUsername = initialLoginState.username;
+            const initialUsername = initialRegisterState.username;
 
             invalid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginActions.setUsername,
+                    action: registerActions.setUsername,
                     payload: value,
                 };
-                const state = loginReducer_setUsername(
-                    initialLoginState,
+                const state = registerReducer_setUsername(
+                    initialRegisterState,
                     dispatch as any,
                 );
                 expect(state.username).toBe(initialUsername);

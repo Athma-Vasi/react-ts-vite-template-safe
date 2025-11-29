@@ -1,14 +1,14 @@
 import React from "react";
 import type { ErrorDispatch } from "../error/dispatches";
-import type { LoginDispatch } from "./dispatches";
-import type { MessageEventLoginForageWorkerToMain } from "./forageWorker";
+import type { RegisterDispatch } from "./dispatches";
+import type { MessageEventRegisterForageWorkerToMain } from "./forageWorker";
 
 async function handleMessageFromForageWorker(
-    { errorDispatch, event, isComponentMountedRef, loginDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventLoginForageWorkerToMain;
+        event: MessageEventRegisterForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        loginDispatch: React.Dispatch<LoginDispatch>;
+        RegisterDispatch: React.Dispatch<RegisterDispatch>;
     },
 ) {
     if (!isComponentMountedRef.current) {
@@ -23,11 +23,11 @@ async function handleMessageFromForageWorker(
 }
 
 async function handleMessageFromCacheWorker(
-    { errorDispatch, event, isComponentMountedRef, loginDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventLoginForageWorkerToMain;
+        event: MessageEventRegisterForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        loginDispatch: React.Dispatch<LoginDispatch>;
+        RegisterDispatch: React.Dispatch<RegisterDispatch>;
     },
 ) {
     if (!isComponentMountedRef.current) {
@@ -42,11 +42,11 @@ async function handleMessageFromCacheWorker(
 }
 
 async function handleMessageFromFetchWorker(
-    { errorDispatch, event, isComponentMountedRef, loginDispatch }: {
+    { errorDispatch, event, isComponentMountedRef, RegisterDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventLoginForageWorkerToMain;
+        event: MessageEventRegisterForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
-        loginDispatch: React.Dispatch<LoginDispatch>;
+        RegisterDispatch: React.Dispatch<RegisterDispatch>;
     },
 ) {
     if (!isComponentMountedRef.current) {
