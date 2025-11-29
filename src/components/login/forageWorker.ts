@@ -16,18 +16,19 @@ type MessageEventLoginForageWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventLoginForageMainToWorker = MessageEvent<
-    {
-        kind: "get";
-        payload: string;
-    } | {
-        kind: "set";
-        payload: [string, unknown];
-    } | {
-        kind: "remove";
-        payload: string;
-    }
->;
+type MessageEventLoginForageMainToWorker<Key = string, Value = unknown> =
+    MessageEvent<
+        {
+            kind: "get";
+            payload: [Key];
+        } | {
+            kind: "set";
+            payload: [Key, Value];
+        } | {
+            kind: "remove";
+            payload: [Key];
+        }
+    >;
 
 self.onmessage = async (
     event: MessageEventLoginForageMainToWorker,
@@ -51,9 +52,14 @@ self.onmessage = async (
     try {
         const { kind, payload } = event.data;
 
+        console.group("Login Forage Worker Message Received");
+        console.log("kind", kind);
+        console.log("payload", payload);
+        console.groupEnd();
+
         switch (kind) {
             case "get": {
-                const key = payload;
+                const [key] = payload;
                 const getResult = await getCachedItemAbortableSafe<
                     unknown
                 >(key, signal);
@@ -73,7 +79,7 @@ self.onmessage = async (
             }
 
             case "remove": {
-                const key = payload;
+                const [key] = payload;
                 const removeResult = await removeCachedItemAbortableSafe(
                     key,
                     signal,

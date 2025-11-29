@@ -1,30 +1,41 @@
 import { useEffect, useReducer, useRef } from "react";
 import { Some } from "ts-results";
+import { sendMessageToWorker } from "../../utils";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
 import { loginActions } from "./actions";
-import type { MessageEventLoginCacheWorkerToMain } from "./cacheWorker";
+import type {
+    MessageEventLoginCacheMainToWorker,
+    MessageEventLoginCacheWorkerToMain,
+} from "./cacheWorker";
 import CacheWorker from "./cacheWorker?worker";
 import FetchWorker from "./fetchWorker?worker";
-import type { MessageEventLoginForageWorkerToMain } from "./forageWorker";
+import type {
+    MessageEventLoginForageMainToWorker,
+    MessageEventLoginForageWorkerToMain,
+} from "./forageWorker";
 import ForageWorker from "./forageWorker?worker";
+import {
+    handleMessageFromCacheWorker,
+    handleMessageFromFetchWorker,
+    handleMessageFromForageWorker,
+} from "./handlers";
 import { loginReducer } from "./reducers";
 import { initialLoginState, type LoginState } from "./state";
 
 type LoginProps = {
-    // this component's state
+    // this component's back-up state from ErrorBoundary
     childComponentState: LoginState;
     errorDispatch: React.Dispatch<ErrorDispatch>;
-    // initialChildComponentState: LoginState;
 };
 function Login(
-    { childComponentState, errorDispatch }: LoginProps,
+    { childComponentState: backupStateFromErrorHOC, errorDispatch }: LoginProps,
 ) {
     const [
         loginState,
         loginDispatch,
-    ] = useReducer(loginReducer, childComponentState);
+    ] = useReducer(loginReducer, backupStateFromErrorHOC ?? initialLoginState);
     const {
         forageWorkerMaybe,
         cacheWorkerMaybe,
@@ -55,11 +66,9 @@ function Login(
         forageWorker.onmessage = async (
             event: MessageEventLoginForageWorkerToMain,
         ) => {
-            // await handleMessageFromForageWorker(
-            //     event,
-            //     loginDispatch,
-            //     errorDispatch,
-            // );
+            await handleMessageFromForageWorker(
+                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+            );
         };
 
         const cacheWorker = new CacheWorker();
@@ -70,11 +79,9 @@ function Login(
         cacheWorker.onmessage = async (
             event: MessageEventLoginCacheWorkerToMain,
         ) => {
-            // await handleMessageFromCacheWorker(
-            //     event,
-            //     loginDispatch,
-            //     errorDispatch,
-            // );
+            await handleMessageFromCacheWorker(
+                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+            );
         };
 
         const fetchWorker = new FetchWorker();
@@ -85,11 +92,9 @@ function Login(
         fetchWorker.onmessage = async (
             event: MessageEventLoginCacheWorkerToMain,
         ) => {
-            // await handleMessageFromFetchWorker(
-            //     event,
-            //     loginDispatch,
-            //     errorDispatch,
-            // );
+            await handleMessageFromFetchWorker(
+                { errorDispatch, event, isComponentMountedRef, loginDispatch },
+            );
         };
 
         // cleanup function to terminate workers on unmount
@@ -114,16 +119,38 @@ function Login(
                 value={username}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     const { currentTarget: { value } } = event;
+
                     loginDispatch({
                         action: loginActions.setUsername,
                         payload: value,
                     });
+
                     errorDispatch({
                         action: errorActions.setChildComponentState,
                         payload: {
-                            ...childComponentState,
+                            ...backupStateFromErrorHOC,
                             username: value,
                         },
+                    });
+
+                    sendMessageToWorker<MessageEventLoginCacheMainToWorker>({
+                        actions: loginActions,
+                        dispatch: loginDispatch,
+                        message: {
+                            kind: "set",
+                            payload: ["username", value],
+                        },
+                        workerMaybe: cacheWorkerMaybe,
+                    });
+
+                    sendMessageToWorker<MessageEventLoginForageMainToWorker>({
+                        actions: loginActions,
+                        dispatch: loginDispatch,
+                        message: {
+                            kind: "set",
+                            payload: ["username", value],
+                        },
+                        workerMaybe: forageWorkerMaybe,
                     });
                 }}
             />
@@ -139,16 +166,38 @@ function Login(
                 value={password}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     const { currentTarget: { value } } = event;
+
                     loginDispatch({
                         action: loginActions.setPassword,
                         payload: value,
                     });
+
                     errorDispatch({
                         action: errorActions.setChildComponentState,
                         payload: {
-                            ...childComponentState,
+                            ...backupStateFromErrorHOC,
                             password: value,
                         },
+                    });
+
+                    sendMessageToWorker<MessageEventLoginCacheMainToWorker>({
+                        actions: loginActions,
+                        dispatch: loginDispatch,
+                        message: {
+                            kind: "set",
+                            payload: ["password", value],
+                        },
+                        workerMaybe: cacheWorkerMaybe,
+                    });
+
+                    sendMessageToWorker<MessageEventLoginForageMainToWorker>({
+                        actions: loginActions,
+                        dispatch: loginDispatch,
+                        message: {
+                            kind: "set",
+                            payload: ["password", value],
+                        },
+                        workerMaybe: forageWorkerMaybe,
                     });
                 }}
             />
@@ -157,7 +206,7 @@ function Login(
 
     console.group("Login Render");
     console.log("loginState", loginState);
-    console.log("childComponentState", childComponentState);
+    console.log("childComponentState", backupStateFromErrorHOC);
     console.groupEnd();
 
     return (

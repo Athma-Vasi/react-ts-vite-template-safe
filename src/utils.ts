@@ -20,8 +20,10 @@ import {
     CacheError,
     JSONError,
     NetworkError,
+    NotFoundError,
     ParseError,
     PromiseAbortedError,
+    WorkerMessageError,
 } from "./errors";
 import type { SafeError, SafeResult } from "./types";
 
@@ -175,10 +177,7 @@ function parseDispatchAndSetState<
             schema,
         },
     );
-    console.group("parseDispatchAndSetState");
-    console.log("dispatch", dispatch);
-    console.log("parsedDispatchResult", parsedDispatchResult);
-    console.groupEnd();
+
     if (parsedDispatchResult.err) {
         return state;
     }
@@ -380,6 +379,58 @@ async function retryFetchSafe<
     return tryAgain(0);
 }
 
+function sendMessageToWorker<
+    MsgEvent extends MessageEvent = MessageEvent,
+    Actions extends Record<string, string> & {
+        setSafeErrorMaybe: "setSafeErrorMaybe";
+    } =
+        & Record<string, string>
+        & { setSafeErrorMaybe: "setSafeErrorMaybe" },
+>(
+    { actions, dispatch, message, workerMaybe }: {
+        actions: Actions;
+        dispatch: React.ActionDispatch<[dispatch: any]>;
+        message: MsgEvent["data"];
+        workerMaybe: Option<Worker>;
+    },
+): None {
+    try {
+        if (workerMaybe.none) {
+            dispatch({
+                action: actions.setSafeErrorMaybe,
+                payload: Some(
+                    createSafeErrorResult(
+                        new NotFoundError(
+                            `Worker is not initialized for message: ${
+                                String(message)
+                            }`,
+                        ),
+                    ),
+                ),
+            });
+
+            return None;
+        }
+
+        const worker = workerMaybe.val;
+        worker.postMessage(message);
+        return None;
+    } catch (error) {
+        dispatch({
+            action: actions.setSafeErrorMaybe,
+            payload: Some(
+                createSafeErrorResult(
+                    new WorkerMessageError(
+                        error,
+                        `Failed to post message: ${String(message)} to worker`,
+                    ),
+                ),
+            ),
+        });
+        return None;
+    }
+}
+
 export {
     createSafeErrorResult,
     createSafeSuccessResult,
@@ -388,5 +439,6 @@ export {
     parseSyncSafe,
     removeCachedItemAbortableSafe,
     retryFetchSafe,
+    sendMessageToWorker,
     setCachedItemAbortableSafe,
 };
