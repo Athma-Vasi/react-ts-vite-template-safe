@@ -198,6 +198,18 @@ function Register(
         />
     );
 
+    const submitButtonElement = (
+        <button
+            disabled={isLoading}
+            onClick={() => {
+                // handle submit logic
+            }}
+            type="button"
+        >
+            {isLoading ? "Registering..." : "Register"}
+        </button>
+    );
+
     console.group("Register Render");
     console.log("RegisterState", RegisterState);
     console.log("childComponentState", backupStateFromErrorHOC);
@@ -208,6 +220,7 @@ function Register(
             <h2>Register Component</h2>
             {usernameElement}
             {passwordElement}
+            {submitButtonElement}
         </div>
     );
 }

@@ -1,21 +1,122 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  /* Neutrals - Light Mode */
+  --color-background: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-border: #e9ecef;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6c757d;
+  --color-text-tertiary: #adb5bd;
+
+  /* Brand Colors */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #dbeafe;
+
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-info: #06b6d4;
+  --color-info-light: #cffafe;
+
+  /* Functional */
+  --color-focus: #3b82f6;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+
+  /* Typography */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-mono: "Fira Code", "Cascadia Code", "Consolas", "Monaco", monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
   --gap: clamp(8px, 2vw, 24px);
   --padding: clamp(12px, 2vw, 32px);
-  --font-size: clamp(16px, 1.5vw, 20px);
+  --font-size-p: clamp(16px, 1.5vw, 20px);
+  --font-size-h1: clamp(32px, 4vw, 48px);
+  --font-size-h2: clamp(24px, 3vw, 36px);
+  --font-size-h3: clamp(20px, 2.5vw, 30px);
+  --font-size-h4: clamp(18px, 2vw, 24px);
+  --font-size-h5: clamp(16px, 1.5vw, 20px);
+  --font-size-h6: clamp(14px, 1.2vw, 18px);
   --input-width: clamp(250px, 100%, 400px);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Neutrals - Dark Mode */
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-tertiary: #64748b;
+
+    /* Brand Colors - slightly adjusted for dark mode */
+    --color-primary: #60a5fa;
+    --color-primary-hover: #3b82f6;
+    --color-primary-light: #1e3a8a;
+
+    /* Semantic Colors - Dark Mode */
+    --color-success: #34d399;
+    --color-success-light: #064e3b;
+    --color-warning: #fbbf24;
+    --color-warning-light: #78350f;
+    --color-error: #f87171;
+    --color-error-light: #7f1d1d;
+    --color-info: #22d3ee;
+    --color-info-light: #164e63;
+
+    /* Functional */
+    --color-focus: #60a5fa;
+    --color-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-full: 9999px;
+
+    /* Shadows - more subtle in dark mode */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  }
 }
 
 /*
@@ -40,6 +141,13 @@
 body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
 }
 
 img, picture, video, canvas, svg {
@@ -57,9 +165,29 @@ p, h1, h2, h3, h4, h5, h6 {
 
 p {
   text-wrap: pretty;
+  font-size: var(--font-size-p);
 }
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+}
+h2 {
+  font-size: var(--font-size-h2);
+}
+h3 {
+  font-size: var(--font-size-h3);
+}
+h4 {
+  font-size: var(--font-size-h4);
+}
+h5 {
+  font-size: var(--font-size-h5);
+}
+h6 {
+  font-size: var(--font-size-h6);
 }
 
 #root, #__next {
@@ -78,20 +206,40 @@ h1, h2, h3, h4, h5, h6 {
   width: 1px;
 }
 
-input[type="text"],
-input[type="password"] {
-  padding: 0.75em;
-  font-size: var(--font-size);
-  border: 1px solid #555555;
-  border-radius: 4px;
-  background-color: #1e1e1e;
-  color: #ffffff;
+/* Buttons */
+button {
+  background-color: var(--color-primary);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+  box-shadow: var(--shadow-sm);
   width: var(--input-width);
+  cursor: pointer;
+  font-size: var(--font-size-p);
 }
 
-p {
-  margin: 0;
-  font-size: var(--font-size);
+button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Inputs */
+input, textarea {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  width: var(--input-width);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+input:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border: none;
 }
 
 .accessible-input {
@@ -101,6 +249,10 @@ p {
   align-items: flex-start;
   width: calc(var(--input-width) + 2em);
   padding: var(--padding);
+
+  .text-input-validation {
+    padding-bottom: var(--padding);
+  }
 }
 
 .register-component {
@@ -108,21 +260,4 @@ p {
   flex-direction: column;
   align-items: center;
   padding: var(--padding);
-}
-
-.text-input-validation {
-  padding-bottom: var(--padding);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

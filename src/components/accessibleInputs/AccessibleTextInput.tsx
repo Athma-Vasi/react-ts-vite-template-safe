@@ -85,6 +85,7 @@ function AccessibleTextInput<
             aria-describedby={describedByIds}
             aria-errormessage={`${name}-invalid-text`}
             aria-invalid={!isValueValid}
+            className={!isValueValid ? "input-error-state" : ""}
             data-testid={dataTestId}
             name={name}
             onBlur={(event: React.FocusEvent<HTMLInputElement, Element>) => {
@@ -156,7 +157,7 @@ function createValidationScreenreaderElement(
                 ? "text-input-validation"
                 : "visually-hidden"}
             id={`${name}-invalid-text`}
-            style={{ color: "red", marginTop: "0.25rem" }}
+            style={{ color: "red", paddingTop: "0.25rem" }}
         >
             {invalidValueText}
         </p>
@@ -171,7 +172,7 @@ function createValidationScreenreaderElement(
                 ? "text-input-validation"
                 : "visually-hidden"}
             id={`${name}-valid-text`}
-            style={{ color: "green", marginTop: "0.25rem" }}
+            style={{ color: "green", paddingTop: "0.25rem" }}
         >
             {validValueText}
         </p>
@@ -184,7 +185,7 @@ function createValidationScreenreaderElement(
             aria-live="polite"
             className="visually-hidden"
             id={`${name}-empty-text`}
-            style={{ color: "gray", marginTop: "0.25rem" }}
+            style={{ color: "gray", paddingTop: "0.25rem" }}
         >
             {emptyValueText}
         </p>
