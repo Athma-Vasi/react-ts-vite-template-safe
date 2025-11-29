@@ -1,19 +1,20 @@
 import { useEffect, useReducer, useRef } from "react";
 import { Some } from "ts-results";
 import { sendMessageToWorker } from "../../utils";
+import { AccessibleTextInput } from "../accessibleInputs/AccessibleTextInput";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
 import { loginActions } from "./actions";
 import type {
-    MessageEventLoginCacheMainToWorker,
     MessageEventLoginCacheWorkerToMain,
+    MessageEventMainToLoginCacheWorker,
 } from "./cacheWorker";
 import CacheWorker from "./cacheWorker?worker";
 import FetchWorker from "./fetchWorker?worker";
 import type {
-    MessageEventLoginForageMainToWorker,
     MessageEventLoginForageWorkerToMain,
+    MessageEventMainToLoginForageWorker,
 } from "./forageWorker";
 import ForageWorker from "./forageWorker?worker";
 import {
@@ -22,12 +23,16 @@ import {
     handleMessageFromForageWorker,
 } from "./handlers";
 import { loginReducer } from "./reducers";
+import {
+    password_validation_regexes,
+    username_validation_regexes,
+} from "./regexes";
 import { initialLoginState, type LoginState } from "./state";
 
 type LoginProps = {
     // this component's back-up state from ErrorBoundary
     childComponentState: LoginState;
-    errorDispatch: React.Dispatch<ErrorDispatch>;
+    errorDispatch: React.ActionDispatch<[dispatch: ErrorDispatch]>;
 };
 function Login(
     { childComponentState: backupStateFromErrorHOC, errorDispatch }: LoginProps,
@@ -111,77 +116,67 @@ function Login(
     }
 
     const usernameElement = (
-        <div>
-            <label htmlFor="username">Username:</label>
-            <input
-                name="username"
-                type="text"
-                value={username}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    const { currentTarget: { value } } = event;
+        <AccessibleTextInput
+            action={loginActions.setUsername}
+            errorAction={errorActions.setChildComponentState}
+            dispatch={loginDispatch}
+            errorDispatch={errorDispatch}
+            label="Username:"
+            name="username"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                const { currentTarget: { value } } = event;
 
-                    loginDispatch({
-                        action: loginActions.setUsername,
-                        payload: value,
-                    });
+                sendMessageToWorker<MessageEventMainToLoginCacheWorker>({
+                    actions: loginActions,
+                    dispatch: loginDispatch,
+                    message: {
+                        kind: "set",
+                        payload: ["username", value],
+                    },
+                    workerMaybe: cacheWorkerMaybe,
+                });
 
-                    errorDispatch({
-                        action: errorActions.setChildComponentState,
-                        payload: {
-                            ...backupStateFromErrorHOC,
-                            username: value,
-                        },
-                    });
-
-                    sendMessageToWorker<MessageEventLoginCacheMainToWorker>({
-                        actions: loginActions,
-                        dispatch: loginDispatch,
-                        message: {
-                            kind: "set",
-                            payload: ["username", value],
-                        },
-                        workerMaybe: cacheWorkerMaybe,
-                    });
-
-                    sendMessageToWorker<MessageEventLoginForageMainToWorker>({
-                        actions: loginActions,
-                        dispatch: loginDispatch,
-                        message: {
-                            kind: "set",
-                            payload: ["username", value],
-                        },
-                        workerMaybe: forageWorkerMaybe,
-                    });
-                }}
-            />
-        </div>
+                sendMessageToWorker<MessageEventMainToLoginForageWorker>({
+                    actions: loginActions,
+                    dispatch: loginDispatch,
+                    message: {
+                        kind: "set",
+                        payload: ["username", value],
+                    },
+                    workerMaybe: forageWorkerMaybe,
+                });
+            }}
+            type="text"
+            validationRegexes={username_validation_regexes}
+            value={username}
+        />
     );
 
     const passwordElement = (
-        <div>
-            <label htmlFor="password">Password:</label>
-            <input
-                name="password"
-                type="password"
-                value={password}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    const { currentTarget: { value } } = event;
+        <AccessibleTextInput
+            action={loginActions.setPassword}
+            dispatch={loginDispatch}
+            errorAction={errorActions.setChildComponentState}
+            errorDispatch={errorDispatch}
+            label="Password:"
+            name="password"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                const { currentTarget: { value } } = event;
 
-                    loginDispatch({
-                        action: loginActions.setPassword,
-                        payload: value,
-                    });
-
-                    errorDispatch({
-                        action: errorActions.setChildComponentState,
-                        payload: {
-                            ...backupStateFromErrorHOC,
-                            password: value,
-                        },
-                    });
-                }}
-            />
-        </div>
+                sendMessageToWorker<MessageEventMainToLoginCacheWorker>({
+                    actions: loginActions,
+                    dispatch: loginDispatch,
+                    message: {
+                        kind: "set",
+                        payload: ["username", value],
+                    },
+                    workerMaybe: cacheWorkerMaybe,
+                });
+            }}
+            type="password"
+            validationRegexes={password_validation_regexes}
+            value={password}
+        />
     );
 
     console.group("Login Render");
@@ -190,13 +185,10 @@ function Login(
     console.groupEnd();
 
     return (
-        <div>
+        <div className="login-component">
             <h2>Login Component</h2>
             {usernameElement}
             {passwordElement}
-            <div>
-                {isLoading ? <p>Loading...</p> : <p>Not Loading</p>}
-            </div>
         </div>
     );
 }

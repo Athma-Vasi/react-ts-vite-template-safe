@@ -16,7 +16,7 @@ type MessageEventLoginForageWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventLoginForageMainToWorker<Key = string, Value = unknown> =
+type MessageEventMainToLoginForageWorker<Key = string, Value = unknown> =
     MessageEvent<
         {
             kind: "get";
@@ -31,7 +31,7 @@ type MessageEventLoginForageMainToWorker<Key = string, Value = unknown> =
     >;
 
 self.onmessage = async (
-    event: MessageEventLoginForageMainToWorker,
+    event: MessageEventMainToLoginForageWorker,
 ) => {
     if (!event.data) {
         self.postMessage(
@@ -145,6 +145,6 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
 });
 
 export type {
-    MessageEventLoginForageMainToWorker,
     MessageEventLoginForageWorkerToMain,
+    MessageEventMainToLoginForageWorker,
 };

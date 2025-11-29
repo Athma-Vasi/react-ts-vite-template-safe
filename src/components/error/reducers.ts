@@ -1,4 +1,4 @@
-import { parseDispatchAndSetState } from "../../utils";
+import { parseSyncSafe } from "../../utils";
 import type { ErrorActions } from "./actions";
 import { errorActions } from "./actions";
 import type { ErrorDispatch } from "./dispatches";
@@ -24,12 +24,26 @@ function errorReducer_setChildComponentState(
     state: ErrorState,
     dispatch: ErrorDispatch,
 ): ErrorState {
-    return parseDispatchAndSetState({
-        dispatch,
-        key: "childComponentState",
-        state,
+    const parsedResult = parseSyncSafe({
+        object: dispatch,
         schema: setChildComponentStateErrorDispatchSchema,
     });
+    if (parsedResult.err) {
+        return state;
+    }
+    const parsedMaybe = parsedResult.safeUnwrap();
+    if (parsedMaybe.none) {
+        return state;
+    }
+    const { payload } = parsedMaybe.safeUnwrap();
+
+    return {
+        ...state,
+        childComponentState: {
+            ...state.childComponentState,
+            ...payload,
+        },
+    };
 }
 
 export { errorReducer, errorReducer_setChildComponentState, errorReducersMap };

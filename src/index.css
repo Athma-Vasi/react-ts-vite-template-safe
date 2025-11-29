@@ -11,8 +11,60 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --gap: clamp(8px, 2vw, 24px);
+  --padding: clamp(12px, 2vw, 32px);
+  --font-size: clamp(16px, 1.5vw, 20px);
+  --input-width: clamp(250px, 100%, 400px);
 }
 
+.visually-hidden {
+  border-width: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0px;
+  position: absolute !important;
+  white-space: nowrap;
+  width: 1px;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 0.75em;
+  font-size: var(--font-size);
+  border: 1px solid #555555;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  width: var(--input-width);
+}
+
+p {
+  margin: 0;
+  font-size: var(--font-size);
+}
+
+.accessible-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  align-items: flex-start;
+  width: calc(var(--input-width) + 2em);
+  padding: var(--padding);
+}
+
+.login-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--padding);
+}
+
+.text-input-validation {
+  padding-bottom: var(--padding);
+}
 
 @media (prefers-color-scheme: light) {
   :root {

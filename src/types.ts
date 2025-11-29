@@ -29,4 +29,13 @@ type SafeError = {
     timestamp: string;
 };
 
-export type { NonNullableObject, Prettify, SafeError, SafeResult, SafeSuccess };
+type ValidationRegexes = Array<[RegExp, string]>;
+
+export type {
+    NonNullableObject,
+    Prettify,
+    SafeError,
+    SafeResult,
+    SafeSuccess,
+    ValidationRegexes,
+};

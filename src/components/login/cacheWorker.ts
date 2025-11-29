@@ -6,7 +6,7 @@ type MessageEventLoginCacheWorkerToMain<
     State extends Record<PropertyKey, unknown> = Record<string, unknown>,
 > = MessageEvent<SafeResult<State>>;
 
-type MessageEventLoginCacheMainToWorker<Key = string, Value = unknown> =
+type MessageEventMainToLoginCacheWorker<Key = string, Value = unknown> =
     MessageEvent<
         | {
             kind: "get";
@@ -31,7 +31,7 @@ type MessageEventLoginCacheMainToWorker<Key = string, Value = unknown> =
     const cache = new Map<string, unknown>();
 
     self.onmessage = async (
-        event: MessageEventLoginCacheMainToWorker,
+        event: MessageEventMainToLoginCacheWorker,
     ) => {
         if (!event.data) {
             self.postMessage(
@@ -119,6 +119,6 @@ self.onerror = (event: string | Event) => {
 };
 
 export type {
-    MessageEventLoginCacheMainToWorker,
     MessageEventLoginCacheWorkerToMain,
+    MessageEventMainToLoginCacheWorker,
 };

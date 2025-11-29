@@ -37,14 +37,14 @@ type MessageEventLoginFetchWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventLoginFetchMainToWorker = MessageEvent<{
+type MessageEventMainToLoginFetchWorker = MessageEvent<{
     // url to fetch
     url: string;
     requestInit: RequestInit;
 }>;
 
 self.onmessage = async (
-    event: MessageEventLoginFetchMainToWorker,
+    event: MessageEventMainToLoginFetchWorker,
 ) => {
     if (!event.data) {
         self.postMessage(
@@ -140,6 +140,6 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
 });
 
 export type {
-    MessageEventLoginFetchMainToWorker,
     MessageEventLoginFetchWorkerToMain,
+    MessageEventMainToLoginFetchWorker,
 };
