@@ -6,14 +6,22 @@ type MessageEventLoginCacheWorkerToMain<
     State extends Record<PropertyKey, unknown> = Record<string, unknown>,
 > = MessageEvent<SafeResult<State>>;
 
-type MessageEventLoginCacheMainToWorker<Key = PropertyKey, Value = unknown> =
+type MessageEventLoginCacheMainToWorker<Key = string, Value = unknown> =
     MessageEvent<
         | {
-            kind: "set";
-            payload: [key: Key, value: Value];
+            kind: "get";
+            payload: [Key];
         }
         | {
-            kind: "sendState";
+            kind: "set";
+            payload: [Key, Value];
+        }
+        | {
+            kind: "remove";
+            payload: [Key];
+        }
+        | {
+            kind: "sendAll";
             payload: [];
         }
     >;
@@ -37,19 +45,31 @@ type MessageEventLoginCacheMainToWorker<Key = PropertyKey, Value = unknown> =
         }
 
         try {
-            const { kind, payload } = event.data as {
-                kind: string;
-                payload: [string, unknown];
-            };
+            const { kind, payload } = event.data;
 
             switch (kind) {
+                case "get": {
+                    const [key] = payload;
+                    const value = cache.get(String(key));
+                    self.postMessage(
+                        createSafeSuccessResult(value),
+                    );
+                    break;
+                }
+
+                case "remove": {
+                    const [key] = payload;
+                    cache.delete(String(key));
+                    break;
+                }
+
                 case "set": {
                     const [key, value] = payload;
                     cache.set(String(key), value);
                     break;
                 }
 
-                case "sendState": {
+                case "sendAll": {
                     self.postMessage(
                         createSafeSuccessResult(Object.fromEntries(cache)),
                     );
