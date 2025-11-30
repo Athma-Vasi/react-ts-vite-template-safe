@@ -1,12 +1,12 @@
-import { WorkerError, WorkerMessageError } from "../../errors";
-import type { SafeResult } from "../../types";
-import { createSafeErrorResult, createSafeSuccessResult } from "../../utils";
+import { WorkerError, WorkerMessageError } from "../errors";
+import type { SafeResult } from "../types";
+import { createSafeErrorResult, createSafeSuccessResult } from "../utils";
 
-type MessageEventRegisterCacheWorkerToMain<
+type MessageEventCacheWorkerToMain<
     State extends Record<PropertyKey, unknown> = Record<string, unknown>,
 > = MessageEvent<SafeResult<State>>;
 
-type MessageEventMainToRegisterCacheWorker<Key = string, Value = unknown> =
+type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
     MessageEvent<
         | {
             kind: "get";
@@ -31,13 +31,13 @@ type MessageEventMainToRegisterCacheWorker<Key = string, Value = unknown> =
     const cache = new Map<string, unknown>();
 
     self.onmessage = async (
-        event: MessageEventMainToRegisterCacheWorker,
+        event: MessageEventMainToCacheWorker,
     ) => {
         if (!event.data) {
             self.postMessage(
                 createSafeErrorResult(
                     new WorkerMessageError(
-                        "No data received in Register cache worker message",
+                        "No data received in cache worker message",
                     ),
                 ),
             );
@@ -80,7 +80,9 @@ type MessageEventMainToRegisterCacheWorker<Key = string, Value = unknown> =
                     self.postMessage(
                         createSafeErrorResult(
                             new WorkerMessageError(
-                                `Unknown message kind "${kind}" received in Register cache worker`,
+                                `Unknown message kind: "${
+                                    String(kind)
+                                }" received in cache worker`,
                             ),
                         ),
                     );
@@ -100,19 +102,16 @@ type MessageEventMainToRegisterCacheWorker<Key = string, Value = unknown> =
 }
 
 self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in Register cache worker:", event);
+    console.error("Unhandled error in cache worker:", event);
     self.postMessage(
         createSafeErrorResult(
             new WorkerError(
                 event,
-                "Unhandled error in Register cache worker",
+                "Unhandled error in cache worker",
             ),
         ),
     );
     return true; // Prevents default logging to console
 };
 
-export type {
-    MessageEventMainToRegisterCacheWorker,
-    MessageEventRegisterCacheWorkerToMain,
-};
+export type { MessageEventCacheWorkerToMain, MessageEventMainToCacheWorker };

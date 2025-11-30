@@ -255,6 +255,17 @@ input:focus {
   }
 }
 
+.error-fallback {
+  background-color: var(--color-error-light);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  width: clamp(300px, 90%, 600px);
+  box-shadow: var(--shadow-md);
+}
+
 .register-component {
   display: flex;
   flex-direction: column;

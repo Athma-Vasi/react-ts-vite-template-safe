@@ -2,16 +2,16 @@ import React from "react";
 import { None, Some } from "ts-results";
 import { WorkerMessageHandlerError } from "../../errors";
 import { createSafeErrorResult } from "../../utils";
+import type { MessageEventFetchWorkerToMain } from "../../workers/fetchWorker";
+import type { MessageEventForageWorkerToMain } from "../../workers/forageWorker";
 import type { ErrorDispatch } from "../error/dispatches";
 import { registerActions } from "./actions";
 import type { RegisterDispatch } from "./dispatches";
-import type { MessageEventRegisterFetchWorkerToMain } from "./fetchWorker";
-import type { MessageEventRegisterForageWorkerToMain } from "./forageWorker";
 
 async function handleMessageFromForageWorker(
     { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventRegisterForageWorkerToMain;
+        event: MessageEventForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
         registerDispatch: React.Dispatch<RegisterDispatch>;
     },
@@ -30,7 +30,7 @@ async function handleMessageFromForageWorker(
 async function handleMessageFromCacheWorker(
     { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventRegisterForageWorkerToMain;
+        event: MessageEventForageWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
         registerDispatch: React.Dispatch<RegisterDispatch>;
     },
@@ -49,7 +49,7 @@ async function handleMessageFromCacheWorker(
 async function handleMessageFromFetchWorker(
     { errorDispatch, event, isComponentMountedRef, registerDispatch }: {
         errorDispatch: React.Dispatch<ErrorDispatch>;
-        event: MessageEventRegisterFetchWorkerToMain;
+        event: MessageEventFetchWorkerToMain;
         isComponentMountedRef: React.RefObject<boolean>;
         registerDispatch: React.Dispatch<RegisterDispatch>;
     },

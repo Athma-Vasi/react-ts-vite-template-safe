@@ -16,6 +16,7 @@ type AccessibleTextInputProps<
     & {
         action: Action;
         dataTestId?: string;
+        disableValidationScreenreaderText?: boolean;
         dispatch: React.ActionDispatch<[dispatch: Dispatch]>;
         errorAction: ErrorAction;
         errorDispatch: React.ActionDispatch<[dispatch: {
@@ -24,7 +25,6 @@ type AccessibleTextInputProps<
         }]>;
         hideLabel?: boolean;
         label?: string;
-        loadingAction: string;
         name: string;
         validationRegexes?: Array<[RegExp, string]>;
         value: Payload;
@@ -44,13 +44,13 @@ function AccessibleTextInput<
     const {
         action,
         dispatch,
+        disableValidationScreenreaderText,
         errorAction,
         errorDispatch,
         name,
         dataTestId = `accessible-text-input-${name}`,
         hideLabel = false,
         label = name,
-        loadingAction,
         onBlur = () => {},
         onChange = () => {},
         onFocus = () => {},
@@ -102,11 +102,6 @@ function AccessibleTextInput<
                     payload: value as Payload,
                 } as Dispatch);
 
-                dispatch({
-                    action: loadingAction,
-                    payload: true,
-                } as Dispatch);
-
                 errorDispatch({
                     action: errorAction,
                     payload: {
@@ -130,7 +125,7 @@ function AccessibleTextInput<
         <div className="accessible-input">
             {hideLabel ? null : labelElement}
             {textInputElement}
-            {screenreaderTextElement}
+            {disableValidationScreenreaderText ? null : screenreaderTextElement}
         </div>
     );
 }

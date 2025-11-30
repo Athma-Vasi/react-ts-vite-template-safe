@@ -2,26 +2,26 @@ import { useEffect, useReducer } from "react";
 import { Some } from "ts-results";
 import { useMountedRef } from "../../hooks/useMountedRef";
 import { createSafeErrorResult, sendMessageToWorker } from "../../utils";
+import type {
+    MessageEventCacheWorkerToMain,
+    MessageEventMainToCacheWorker,
+} from "../../workers/cacheWorker";
+import CacheWorker from "../../workers/cacheWorker?worker";
+import type {
+    MessageEventFetchWorkerToMain,
+    MessageEventMainToFetchWorker,
+} from "../../workers/fetchWorker";
+import FetchWorker from "../../workers/fetchWorker?worker";
+import type {
+    MessageEventForageWorkerToMain,
+    MessageEventMainToForageWorker,
+} from "../../workers/forageWorker";
+import ForageWorker from "../../workers/forageWorker?worker";
 import { AccessibleTextInput } from "../accessibleInputs/AccessibleTextInput";
 import ErrorSuspenseHOC from "../error";
 import { errorActions } from "../error/actions";
 import type { ErrorDispatch } from "../error/dispatches";
 import { registerActions } from "./actions";
-import type {
-    MessageEventMainToRegisterCacheWorker,
-    MessageEventRegisterCacheWorkerToMain,
-} from "./cacheWorker";
-import CacheWorker from "./cacheWorker?worker";
-import type {
-    MessageEventMainToRegisterFetchWorker,
-    MessageEventRegisterFetchWorkerToMain,
-} from "./fetchWorker";
-import FetchWorker from "./fetchWorker?worker";
-import type {
-    MessageEventMainToRegisterForageWorker,
-    MessageEventRegisterForageWorkerToMain,
-} from "./forageWorker";
-import ForageWorker from "./forageWorker?worker";
 import {
     handleMessageFromCacheWorker,
     handleMessageFromFetchWorker,
@@ -79,7 +79,7 @@ function Register(
             payload: Some(forageWorker),
         });
         forageWorker.onmessage = async (
-            event: MessageEventRegisterForageWorkerToMain,
+            event: MessageEventForageWorkerToMain,
         ) => {
             await handleMessageFromForageWorker(
                 {
@@ -97,7 +97,7 @@ function Register(
             payload: Some(cacheWorker),
         });
         cacheWorker.onmessage = async (
-            event: MessageEventRegisterCacheWorkerToMain,
+            event: MessageEventCacheWorkerToMain,
         ) => {
             await handleMessageFromCacheWorker(
                 {
@@ -115,7 +115,7 @@ function Register(
             payload: Some(fetchWorker),
         });
         fetchWorker.onmessage = async (
-            event: MessageEventRegisterFetchWorkerToMain,
+            event: MessageEventFetchWorkerToMain,
         ) => {
             await handleMessageFromFetchWorker(
                 {
@@ -138,7 +138,7 @@ function Register(
 
     useEffect(() => {
         // simulate random error for testing ErrorBoundary HOC
-        const isError = Math.random() < 0.25;
+        const isError = Math.random() < 0.15;
         if (!isError || !username) {
             return;
         }
@@ -163,13 +163,12 @@ function Register(
             errorAction={errorActions.setChildComponentState}
             dispatch={registerDispatch}
             errorDispatch={errorDispatch}
-            label="Username:"
-            loadingAction={registerActions.setIsLoading}
+            label="Username: "
             name="username"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
-                sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
+                sendMessageToWorker<MessageEventMainToCacheWorker>({
                     actions: registerActions,
                     dispatch: registerDispatch,
                     message: {
@@ -179,7 +178,7 @@ function Register(
                     workerMaybe: cacheWorkerMaybe,
                 });
 
-                sendMessageToWorker<MessageEventMainToRegisterForageWorker>({
+                sendMessageToWorker<MessageEventMainToForageWorker>({
                     actions: registerActions,
                     dispatch: registerDispatch,
                     message: {
@@ -201,13 +200,12 @@ function Register(
             dispatch={registerDispatch}
             errorAction={errorActions.setChildComponentState}
             errorDispatch={errorDispatch}
-            label="Password:"
-            loadingAction={registerActions.setIsLoading}
+            label="Password: "
             name="password"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
-                sendMessageToWorker<MessageEventMainToRegisterCacheWorker>({
+                sendMessageToWorker<MessageEventMainToCacheWorker>({
                     actions: registerActions,
                     dispatch: registerDispatch,
                     message: {
@@ -236,7 +234,7 @@ function Register(
                     payload: true,
                 });
 
-                sendMessageToWorker<MessageEventMainToRegisterFetchWorker>({
+                sendMessageToWorker<MessageEventMainToFetchWorker>({
                     actions: registerActions,
                     dispatch: registerDispatch,
                     message: {

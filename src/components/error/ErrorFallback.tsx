@@ -13,6 +13,7 @@ function ErrorFallback({
 
     return (
         <div
+            className="error-fallback"
             role="alert"
             style={{
                 padding: "1rem",

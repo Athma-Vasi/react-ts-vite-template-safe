@@ -1,22 +1,22 @@
-import { async_timeout_ms } from "../../constants";
+import { async_timeout_ms } from "../constants";
 import {
     PromiseRejectionError,
     WorkerError,
     WorkerMessageError,
-} from "../../errors";
-import type { SafeResult } from "../../types";
+} from "../errors";
+import type { SafeResult } from "../types";
 import {
     createSafeErrorResult,
     getCachedItemAbortableSafe,
     removeCachedItemAbortableSafe,
     setCachedItemAbortableSafe,
-} from "../../utils";
+} from "../utils";
 
-type MessageEventRegisterForageWorkerToMain<
+type MessageEventForageWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventMainToRegisterForageWorker<Key = string, Value = unknown> =
+type MessageEventMainToForageWorker<Key = string, Value = unknown> =
     MessageEvent<
         {
             kind: "get";
@@ -31,13 +31,13 @@ type MessageEventMainToRegisterForageWorker<Key = string, Value = unknown> =
     >;
 
 self.onmessage = async (
-    event: MessageEventMainToRegisterForageWorker,
+    event: MessageEventMainToForageWorker,
 ) => {
     if (!event.data) {
         self.postMessage(
             createSafeErrorResult(
                 new WorkerMessageError(
-                    "No data received in Register Forage worker message",
+                    "No data received in forage worker message",
                 ),
             ),
         );
@@ -87,7 +87,7 @@ self.onmessage = async (
                 self.postMessage(
                     createSafeErrorResult(
                         new WorkerError(
-                            `Unknown kind in Register Forage worker message: ${
+                            `Unknown kind in forage worker message: ${
                                 String(
                                     kind,
                                 )
@@ -112,12 +112,12 @@ self.onmessage = async (
 };
 
 self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in Register Forage worker:", event);
+    console.error("Unhandled error in forage worker:", event);
     self.postMessage(
         createSafeErrorResult(
             new WorkerError(
                 event,
-                "Unhandled error in Register Forage worker",
+                "Unhandled error in forage worker",
             ),
         ),
     );
@@ -126,20 +126,17 @@ self.onerror = (event: string | Event) => {
 
 self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
     console.error(
-        "Unhandled promise rejection in Register Forage worker:",
+        "Unhandled promise rejection in forage worker:",
         event.reason,
     );
     self.postMessage(
         createSafeErrorResult(
             new PromiseRejectionError(
                 event.reason,
-                "Unhandled promise rejection in Register Forage worker",
+                "Unhandled promise rejection in forage worker",
             ),
         ),
     );
 });
 
-export type {
-    MessageEventMainToRegisterForageWorker,
-    MessageEventRegisterForageWorkerToMain,
-};
+export type { MessageEventForageWorkerToMain, MessageEventMainToForageWorker };

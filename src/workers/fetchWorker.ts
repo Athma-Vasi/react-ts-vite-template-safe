@@ -1,18 +1,14 @@
 import { None, Ok } from "ts-results";
 import { z } from "zod";
-import { fetch_timeout_ms } from "../../constants";
+import { response_data_schema } from "../components/register/dispatches";
+import { fetch_timeout_ms } from "../constants";
 import {
     PromiseRejectionError,
     WorkerError,
     WorkerMessageError,
-} from "../../errors";
-import type { SafeResult } from "../../types";
-import {
-    createSafeErrorResult,
-    parseSyncSafe,
-    retryFetchSafe,
-} from "../../utils";
-import { response_data_schema } from "./dispatches";
+} from "../errors";
+import type { SafeResult } from "../types";
+import { createSafeErrorResult, parseSyncSafe, retryFetchSafe } from "../utils";
 
 // mapping of url to zod schema for decoding json response
 // as zod schemas cannot be serialized
@@ -22,24 +18,24 @@ const json_schema_decode_table: Record<string, z.ZodType> = {
     "https://jsonplaceholder.typicode.com/posts": response_data_schema,
 };
 
-type MessageEventRegisterFetchWorkerToMain<
+type MessageEventFetchWorkerToMain<
     Data = unknown,
 > = MessageEvent<SafeResult<Data>>;
 
-type MessageEventMainToRegisterFetchWorker = MessageEvent<{
+type MessageEventMainToFetchWorker = MessageEvent<{
     // url to fetch
     url: string;
     requestInit: RequestInit;
 }>;
 
 self.onmessage = async (
-    event: MessageEventMainToRegisterFetchWorker,
+    event: MessageEventMainToFetchWorker,
 ) => {
     if (!event.data) {
         self.postMessage(
             createSafeErrorResult(
                 new WorkerMessageError(
-                    "No data received in Register Fetch worker message",
+                    "No data received in fetch worker message",
                 ),
             ),
         );
@@ -75,7 +71,7 @@ self.onmessage = async (
             self.postMessage(
                 createSafeErrorResult(
                     new WorkerError(
-                        `No schema found for URL: ${url}`,
+                        `No schema found for URL: ${String(url)}`,
                     ),
                 ),
             );
@@ -101,12 +97,12 @@ self.onmessage = async (
 };
 
 self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in Register Fetch worker:", event);
+    console.error("Unhandled error in fetch worker:", event);
     self.postMessage(
         createSafeErrorResult(
             new WorkerError(
                 event,
-                "Unhandled error in Register Fetch worker",
+                "Unhandled error in fetch worker",
             ),
         ),
     );
@@ -115,20 +111,17 @@ self.onerror = (event: string | Event) => {
 
 self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
     console.error(
-        "Unhandled promise rejection in Register Fetch worker:",
+        "Unhandled promise rejection in fetch worker:",
         event.reason,
     );
     self.postMessage(
         createSafeErrorResult(
             new PromiseRejectionError(
                 event.reason,
-                "Unhandled promise rejection in Register Fetch worker",
+                "Unhandled promise rejection in fetch worker",
             ),
         ),
     );
 });
 
-export type {
-    MessageEventMainToRegisterFetchWorker,
-    MessageEventRegisterFetchWorkerToMain,
-};
+export type { MessageEventFetchWorkerToMain, MessageEventMainToFetchWorker };
