@@ -1,10 +1,11 @@
+import { None, Ok } from "ts-results";
 import { WorkerError, WorkerMessageError } from "../errors";
 import type { SafeResult } from "../types";
 import { createSafeErrorResult, createSafeSuccessResult } from "../utils";
 
-type MessageEventCacheWorkerToMain<
-    State extends Record<PropertyKey, unknown> = Record<string, unknown>,
-> = MessageEvent<SafeResult<State>>;
+type MessageEventCacheWorkerToMain<Data = unknown> = MessageEvent<
+    SafeResult<Data>
+>;
 
 type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
     MessageEvent<
@@ -60,12 +61,18 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                 case "remove": {
                     const [key] = payload;
                     cache.delete(String(key));
+                    self.postMessage(
+                        new Ok(None),
+                    );
                     break;
                 }
 
                 case "set": {
                     const [key, value] = payload;
                     cache.set(String(key), value);
+                    self.postMessage(
+                        new Ok(None),
+                    );
                     break;
                 }
 
