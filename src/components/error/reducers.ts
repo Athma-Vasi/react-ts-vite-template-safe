@@ -10,7 +10,7 @@ function errorReducer(
     dispatch: ErrorDispatch,
 ): ErrorState {
     const reducer = errorReducersMap.get(dispatch.action);
-    return reducer ? reducer(state, dispatch) : state;
+    return reducer == null ? state : reducer(state, dispatch);
 }
 
 const errorReducersMap: Map<

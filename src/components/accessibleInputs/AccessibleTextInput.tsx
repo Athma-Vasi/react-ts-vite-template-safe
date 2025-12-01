@@ -1,4 +1,5 @@
-import React from "react";
+import React, { type JSX } from "react";
+import type { ValidationRegexes } from "../../types";
 
 type AccessibleTextInputProps<
     Action extends string = string,
@@ -135,30 +136,34 @@ function createValidationScreenreaderElement(
         isInputFocused: boolean;
         isValueValid: boolean;
         name: string;
-        validationRegexes: Array<[RegExp, string]>;
+        validationRegexes: ValidationRegexes;
         value: string;
     },
-) {
-    const uppercaseName = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+): {
+    describedByIds: string;
+    screenreaderTextElement: JSX.Element;
+} {
+    const capitalizedName = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 
     const shouldShowInvalidValueElement = isInputFocused && !isValueValid;
     const invalidValueText = validationRegexes.reduce(
         (acc, [regex, message]) => {
-            if (!regex.test(value)) {
+            const isValid = regex.test(value);
+            if (!isValid) {
                 acc += `${message} `;
             }
 
             return acc;
         },
-        `${uppercaseName} is invalid. `,
+        `${capitalizedName} is invalid. `,
     ).trim();
     const invalidValueElement = (
         <p
             aria-live="polite"
             className={shouldShowInvalidValueElement
-                ? "text-input-validation"
+                ? "text-input__validation"
                 : "visually-hidden"}
-            id={`${name}-invalid-text`}
+            id={`${name}-text-input__validation--invalid`}
             style={{ color: "red", paddingTop: "0.25rem" }}
         >
             {invalidValueText}
@@ -166,14 +171,14 @@ function createValidationScreenreaderElement(
     );
 
     const shouldShowValidValueElement = isInputFocused && isValueValid;
-    const validValueText = `${uppercaseName} is valid!`;
+    const validValueText = `${capitalizedName} is valid!`;
     const validValueElement = (
         <p
             aria-live="polite"
             className={shouldShowValidValueElement
-                ? "text-input-validation"
+                ? "text-input__validation"
                 : "visually-hidden"}
-            id={`${name}-valid-text`}
+            id={`${name}-text-input__validation--valid`}
             style={{ color: "green", paddingTop: "0.25rem" }}
         >
             {validValueText}
@@ -181,12 +186,12 @@ function createValidationScreenreaderElement(
     );
 
     const shouldShowEmptyValueElement = isInputFocused && value.length === 0;
-    const emptyValueText = `${uppercaseName} is empty.`;
+    const emptyValueText = `${capitalizedName} is empty.`;
     const emptyValueElement = (
         <p
             aria-live="polite"
             className="visually-hidden"
-            id={`${name}-empty-text`}
+            id={`${name}-text-input__validation--empty`}
             style={{ color: "gray", paddingTop: "0.25rem" }}
         >
             {emptyValueText}
@@ -194,13 +199,14 @@ function createValidationScreenreaderElement(
     );
 
     return {
+        describedByIds: `${name}-text-input__validation--invalid ` +
+            `${name}-text-input__validation--valid ` +
+            `${name}-text-input__validation--empty`,
         screenreaderTextElement: shouldShowInvalidValueElement
             ? invalidValueElement
             : shouldShowEmptyValueElement
             ? emptyValueElement
             : validValueElement,
-        describedByIds:
-            `${name}-invalid-text ${name}-valid-text ${name}-empty-text`,
     };
 }
 

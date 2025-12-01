@@ -19,9 +19,10 @@ Given a state type **LoginState** with fields:
 
 ```typescript
 type LoginState = {
-    forageWorker: Worker | null;
+    forageWorkerMaybe: Option<Worker>;
     isLoading: boolean;
     username: string;
+    setSafeErrorMaybe: Option<Err<SafeError>>;
 };
 ```
 

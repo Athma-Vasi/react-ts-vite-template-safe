@@ -250,7 +250,7 @@ input:focus {
   width: calc(var(--input-width) + 2em);
   padding: var(--padding);
 
-  .text-input-validation {
+  .text-input__validation {
     padding-bottom: var(--padding);
   }
 }

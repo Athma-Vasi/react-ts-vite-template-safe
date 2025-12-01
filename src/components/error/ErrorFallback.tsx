@@ -9,7 +9,6 @@ function ErrorFallback({
     resetErrorBoundary: () => void;
 }) {
     console.log("ErrorFallback rendered with error:", error);
-    console.log("resetErrorBoundary function:", resetErrorBoundary);
 
     return (
         <div
@@ -25,7 +24,7 @@ function ErrorFallback({
             <h2 style={{ color: "red" }}>Something went wrong:</h2>
             <pre
                 style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
-            >{error.err ? error.val.stack : "no error"}</pre>
+            >{error.err ? error.val.stack : "error is ok"}</pre>
             <button
                 onClick={resetErrorBoundary}
                 style={{

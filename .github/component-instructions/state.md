@@ -18,23 +18,29 @@ initial state object with sensible default values.
 Given state fields:
 
 ```typescript
-username: string;
+forageWorkerMaybe: Option<Worker>;
 isLoading: boolean;
-forageWorker: Worker | null;
+responseData: Array<unknown>;
+setSafeErrorMaybe: Option<Err<SafeError>>;
+username: string;
 ```
 
 Generate the following in `state.ts`:
 
 ```typescript
 type LoginState = {
-    forageWorker: Worker | null;
+    forageWorkerMaybe: Option<Worker>;
     isLoading: boolean;
+    responseData: Array<unknown>;
+    setSafeErrorMaybe: Option<Err<SafeError>>;
     username: string;
 };
 
 const initialLoginState: LoginState = {
-    forageWorker: null,
+    forageWorkerMaybe: None,
     isLoading: false,
+    responseData: [],
+    setSafeErrorMaybe: None,
     username: "",
 };
 
@@ -106,22 +112,10 @@ age: number;
 // Boolean
 isLoading: boolean;
 // Initial: false
-```
 
-### Nullable Types
-
-```typescript
-// Nullable Object
-worker: Worker | null;
-// Initial: null
-
-// Nullable Array
-data: User[] | null;
-// Initial: null
-
-// Optional Field
-metadata?: Record<string, unknown>;
-// Initial: undefined (or omit from initial state)
+// Option
+safeErrorMaybe: Option<Err<SafeError>>;
+// Initial: None
 ```
 
 ### Arrays
@@ -163,18 +157,6 @@ value: string | number;
 // Initial: "" (prefer string as default)
 ```
 
-### Complex Types
-
-```typescript
-// Nested object
-user: { name: string; email: string } | null;
-// Initial: null
-
-// Function type
-callback: (() => void) | null;
-// Initial: null
-```
-
 ## ✨ Best Practices
 
 1. **Naming Convention**: Use `ComponentNameState` for type and
@@ -188,10 +170,9 @@ callback: (() => void) | null;
 3. **Type Safety**: Ensure initial values match the type exactly - no type
    assertions needed
 
-4. **Nullable vs Optional**:
-   - Use `field: Type | null` when field will be set later
-   - Use `field?: Type` when field is truly optional
-   - Initialize nullable as `null`, optional as `undefined` or omit
+4. **Optional**:
+   - use Option types for nullable fields
+   - initialize to `None` for Option types
 
 5. **Sensible Defaults**: Choose defaults that represent the "empty" or
    "initial" state of your component

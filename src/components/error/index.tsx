@@ -23,13 +23,12 @@ function ErrorSuspenseHOC<
             errorDispatch,
         ] = useReducer(errorReducer, initialErrorState);
         const { childComponentState } = errorState;
-        const newChildComponentState = {
-            ...initialChildComponentState,
-            ...childComponentState,
-        };
 
         const propsModified = {
-            childComponentState: newChildComponentState,
+            childComponentState: {
+                ...initialChildComponentState,
+                ...childComponentState,
+            },
             errorDispatch,
         };
 

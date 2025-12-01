@@ -18,7 +18,7 @@ function registerReducer(
     dispatch: RegisterDispatch,
 ): RegisterState {
     const reducer = registerReducersMap.get(dispatch.action);
-    return reducer ? reducer(state, dispatch) : state;
+    return reducer == null ? state : reducer(state, dispatch);
 }
 
 const registerReducersMap: Map<
