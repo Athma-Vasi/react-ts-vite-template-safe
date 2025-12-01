@@ -157,13 +157,14 @@ function createValidationScreenreaderElement(
         },
         `${capitalizedName} is invalid. `,
     ).trim();
+    const invalidValueElementId = `${name}-text-input__validation--invalid`;
     const invalidValueElement = (
         <p
             aria-live="polite"
             className={shouldShowInvalidValueElement
                 ? "text-input__validation"
                 : "visually-hidden"}
-            id={`${name}-text-input__validation--invalid`}
+            id={invalidValueElementId}
             style={{ color: "red", paddingTop: "0.25rem" }}
         >
             {invalidValueText}
@@ -172,13 +173,14 @@ function createValidationScreenreaderElement(
 
     const shouldShowValidValueElement = isInputFocused && isValueValid;
     const validValueText = `${capitalizedName} is valid!`;
+    const validValueElementId = `${name}-text-input__validation--valid`;
     const validValueElement = (
         <p
             aria-live="polite"
             className={shouldShowValidValueElement
                 ? "text-input__validation"
                 : "visually-hidden"}
-            id={`${name}-text-input__validation--valid`}
+            id={validValueElementId}
             style={{ color: "green", paddingTop: "0.25rem" }}
         >
             {validValueText}
@@ -187,11 +189,12 @@ function createValidationScreenreaderElement(
 
     const shouldShowEmptyValueElement = isInputFocused && value.length === 0;
     const emptyValueText = `${capitalizedName} is empty.`;
+    const emptyValueElementId = `${name}-text-input__validation--empty`;
     const emptyValueElement = (
         <p
             aria-live="polite"
             className="visually-hidden"
-            id={`${name}-text-input__validation--empty`}
+            id={emptyValueElementId}
             style={{ color: "gray", paddingTop: "0.25rem" }}
         >
             {emptyValueText}
@@ -199,9 +202,8 @@ function createValidationScreenreaderElement(
     );
 
     return {
-        describedByIds: `${name}-text-input__validation--invalid ` +
-            `${name}-text-input__validation--valid ` +
-            `${name}-text-input__validation--empty`,
+        describedByIds:
+            `${invalidValueElementId} ${validValueElementId} ${emptyValueElementId}`,
         screenreaderTextElement: shouldShowInvalidValueElement
             ? invalidValueElement
             : shouldShowEmptyValueElement
