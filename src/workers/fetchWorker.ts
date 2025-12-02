@@ -7,8 +7,8 @@ import {
     WorkerError,
     WorkerMessageError,
 } from "../errors";
-import type { SafeResult } from "../types";
-import { createSafeErrorResult, parseSyncSafe, retryFetchSafe } from "../utils";
+import type { AppResult } from "../types";
+import { createAppErrorResult, parseSyncSafe, retryFetchSafe } from "../utils";
 
 // mapping of url to zod schema for decoding json response
 // as zod schemas cannot be serialized
@@ -20,7 +20,7 @@ const json_schema_decode_table: Record<string, z.ZodType> = {
 
 type MessageEventFetchWorkerToMain<
     Data = unknown,
-> = MessageEvent<SafeResult<Data>>;
+> = MessageEvent<AppResult<Data>>;
 
 type MessageEventMainToFetchWorker = MessageEvent<{
     // url to fetch
@@ -33,7 +33,7 @@ self.onmessage = async (
 ) => {
     if (!event.data) {
         self.postMessage(
-            createSafeErrorResult(
+            createAppErrorResult(
                 new WorkerMessageError(
                     "No data received in fetch worker message",
                 ),
@@ -69,7 +69,7 @@ self.onmessage = async (
         const schema = json_schema_decode_table[url];
         if (!schema) {
             self.postMessage(
-                createSafeErrorResult(
+                createAppErrorResult(
                     new WorkerError(
                         `No schema found for URL: ${String(url)}`,
                     ),
@@ -87,7 +87,7 @@ self.onmessage = async (
         return;
     } catch (error: unknown) {
         self.postMessage(
-            createSafeErrorResult(
+            createAppErrorResult(
                 new WorkerError(error),
             ),
         );
@@ -99,7 +99,7 @@ self.onmessage = async (
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in fetch worker:", event);
     self.postMessage(
-        createSafeErrorResult(
+        createAppErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in fetch worker",
@@ -115,7 +115,7 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
         event.reason,
     );
     self.postMessage(
-        createSafeErrorResult(
+        createAppErrorResult(
             new PromiseRejectionError(
                 event.reason,
                 "Unhandled promise rejection in fetch worker",

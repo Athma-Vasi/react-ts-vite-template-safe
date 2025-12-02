@@ -4,9 +4,9 @@ import {
     WorkerError,
     WorkerMessageError,
 } from "../errors";
-import type { SafeResult } from "../types";
+import type { AppResult } from "../types";
 import {
-    createSafeErrorResult,
+    createAppErrorResult,
     getCachedItemAbortableSafe,
     removeCachedItemAbortableSafe,
     setCachedItemAbortableSafe,
@@ -14,7 +14,7 @@ import {
 
 type MessageEventForageWorkerToMain<
     Data = unknown,
-> = MessageEvent<SafeResult<Data>>;
+> = MessageEvent<AppResult<Data>>;
 
 type MessageEventMainToForageWorker<Key = string, Value = unknown> =
     MessageEvent<
@@ -35,7 +35,7 @@ self.onmessage = async (
 ) => {
     if (!event.data) {
         self.postMessage(
-            createSafeErrorResult(
+            createAppErrorResult(
                 new WorkerMessageError(
                     "No data received in forage worker message",
                 ),
@@ -85,7 +85,7 @@ self.onmessage = async (
 
             default: {
                 self.postMessage(
-                    createSafeErrorResult(
+                    createAppErrorResult(
                         new WorkerError(
                             `Unknown kind in forage worker message: ${
                                 String(
@@ -102,7 +102,7 @@ self.onmessage = async (
         return;
     } catch (error: unknown) {
         self.postMessage(
-            createSafeErrorResult(
+            createAppErrorResult(
                 new WorkerError(error),
             ),
         );
@@ -114,7 +114,7 @@ self.onmessage = async (
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in forage worker:", event);
     self.postMessage(
-        createSafeErrorResult(
+        createAppErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in forage worker",
@@ -130,7 +130,7 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
         event.reason,
     );
     self.postMessage(
-        createSafeErrorResult(
+        createAppErrorResult(
             new PromiseRejectionError(
                 event.reason,
                 "Unhandled promise rejection in forage worker",

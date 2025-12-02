@@ -1,10 +1,10 @@
 import { None, Ok } from "ts-results";
 import { WorkerError, WorkerMessageError } from "../errors";
-import type { SafeResult } from "../types";
-import { createSafeErrorResult, createSafeSuccessResult } from "../utils";
+import type { AppResult } from "../types";
+import { createAppErrorResult, createSafeSuccessResult } from "../utils";
 
 type MessageEventCacheWorkerToMain<Data = unknown> = MessageEvent<
-    SafeResult<Data>
+    AppResult<Data>
 >;
 
 type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
@@ -36,7 +36,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
     ) => {
         if (!event.data) {
             self.postMessage(
-                createSafeErrorResult(
+                createAppErrorResult(
                     new WorkerMessageError(
                         "No data received in cache worker message",
                     ),
@@ -85,7 +85,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
 
                 default: {
                     self.postMessage(
-                        createSafeErrorResult(
+                        createAppErrorResult(
                             new WorkerMessageError(
                                 `Unknown message kind: "${
                                     String(kind)
@@ -100,7 +100,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
             return;
         } catch (error: unknown) {
             self.postMessage(
-                createSafeErrorResult(
+                createAppErrorResult(
                     new WorkerError(error),
                 ),
             );
@@ -111,7 +111,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in cache worker:", event);
     self.postMessage(
-        createSafeErrorResult(
+        createAppErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in cache worker",

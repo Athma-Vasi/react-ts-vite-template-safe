@@ -14,7 +14,7 @@ type Prettify<T> =
     & {};
 
 type SafeSuccess<Data = unknown> = Option<Data>;
-type SafeError = {
+type AppError = {
     name: string;
     errorKind: string;
     stack: string;
@@ -22,9 +22,9 @@ type SafeError = {
     status: Option<number>;
     timestamp: string;
 };
-type SafeResult<Data = unknown> = Result<
+type AppResult<Data = unknown> = Result<
     SafeSuccess<Data>,
-    SafeError
+    AppError
 >;
 
 type ValidationRegexes = Array<[RegExp, string]>;
@@ -37,11 +37,11 @@ type ResponseData = {
 };
 
 export type {
+    AppError,
+    AppResult,
     NonNullableObject,
     Prettify,
     ResponseData,
-    SafeError,
-    SafeResult,
     SafeSuccess,
     ValidationRegexes,
 };

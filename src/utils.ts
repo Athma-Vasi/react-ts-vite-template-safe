@@ -16,16 +16,17 @@ import z, {
 } from "zod";
 import type { $strip } from "zod/v4/core";
 import {
+    AppErrorBase,
     CacheError,
     JSONError,
     NetworkError,
     NotFoundError,
     ParseError,
     PromiseAbortedError,
-    SafeErrorBase,
+    UnknownError,
     WorkerMessageError,
 } from "./errors";
-import type { SafeResult } from "./types";
+import type { AppResult } from "./types";
 
 function createSafeSuccessResult<Data = unknown>(
     data: Data,
@@ -33,82 +34,19 @@ function createSafeSuccessResult<Data = unknown>(
     return new Ok(data == null ? None : Some(data));
 }
 
-function createSafeErrorResult(
-    safeErrorBase: SafeErrorBase,
-): Err<SafeErrorBase> {
-    return new Err(safeErrorBase);
-    // if (error instanceof Error) {
-    //     return new Err({
-    //         message: error.message == null ? "Unknown error" : error.message,
-    //         name: error.name == null ? "Error" : error.name,
-    //         original: Some(error.toString()),
-    //         stack: error.stack == null ? None : Some(error.stack),
-    //         status: None,
-    //         timestamp: new Date().toISOString(),
-    //     });
-    // }
+function createAppErrorResult(
+    appErrorBase: AppErrorBase,
+): Err<AppErrorBase> {
+    if (appErrorBase instanceof AppErrorBase) {
+        return new Err(appErrorBase);
+    }
 
-    // if (typeof error === "string") {
-    //     return new Err({
-    //         message: error,
-    //         name: "Error",
-    //         original: Some(error),
-    //         stack: None,
-    //         status: None,
-    //         timestamp: new Date().toISOString(),
-    //     });
-    // }
-
-    // function serializeSafe(data: unknown): Option<string> {
-    //     try {
-    //         const serializedData = JSON.stringify(data, null, 2);
-    //         return Some(serializedData);
-    //     } catch (_error: unknown) {
-    //         return Some("Unserializable data");
-    //     }
-    // }
-
-    // if (error instanceof Event) {
-    //     if (error instanceof PromiseRejectionEvent) {
-    //         return new Err({
-    //             message: error.reason.toString() ?? "",
-    //             name: `PromiseRejectionEvent: ${error.type}`,
-    //             original: serializeSafe(error),
-    //             stack: None,
-    //             status: None,
-    //             timestamp: new Date().toISOString(),
-    //         });
-    //     }
-
-    //     return new Err({
-    //         message: error.timeStamp.toString() ?? "",
-    //         name: `EventError: ${error.type}`,
-    //         original: serializeSafe(error),
-    //         stack: None,
-    //         status: None,
-    //         timestamp: new Date().toISOString(),
-    //     });
-    // }
-
-    // if (error instanceof SafeErrorBase) {
-    //     return new Err({
-    //         message: error.message,
-    //         name: error.name,
-    //         original: None,
-    //         stack: error.stack ? Some(error.stack) : None,
-    //         status: error.status,
-    //         timestamp: error.timestamp,
-    //     });
-    // }
-
-    // return new Err({
-    //     message: "You've seen it before.🪞 Déjà vu. Something's off...",
-    //     name: "👾 SimulationDysfunction",
-    //     original: serializeSafe(error),
-    //     stack: None,
-    //     status: None,
-    //     timestamp: new Date().toISOString(),
-    // });
+    return new Err(
+        new UnknownError(
+            appErrorBase,
+            "createAppErrorResult received non-AppErrorBase instance",
+        ),
+    );
 }
 
 function parseSyncSafe<Output = unknown>(
@@ -116,7 +54,7 @@ function parseSyncSafe<Output = unknown>(
         object: Output;
         schema: z.ZodType;
     },
-): SafeResult<Output> {
+): AppResult<Output> {
     try {
         const { data, error, success } = Array.isArray(object)
             ? z.array(schema).safeParse(object)
@@ -124,13 +62,13 @@ function parseSyncSafe<Output = unknown>(
 
         return success
             ? createSafeSuccessResult(data as Output)
-            : createSafeErrorResult(
+            : createAppErrorResult(
                 new ParseError(
                     `Failed to parse object: ${error.message}`,
                 ),
             );
     } catch (error_: unknown) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new ParseError(
                 error_,
                 `Exception thrown during parse of object:
@@ -220,9 +158,9 @@ function makeAbortable<Data = unknown>(
 async function getCachedItemAbortableSafe<Data = unknown>(
     key: string,
     signal: AbortSignal,
-): Promise<SafeResult<Data>> {
+): Promise<AppResult<Data>> {
     if (signal.aborted) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new PromiseAbortedError(
                 "getCachedItemAbortableSafe aborted before start",
             ),
@@ -234,7 +172,7 @@ async function getCachedItemAbortableSafe<Data = unknown>(
         const data = await makeAbortable(cacheOperation, signal);
         return createSafeSuccessResult(data);
     } catch (error: unknown) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new CacheError(error, `Failed to get cached item for key: ${key}`),
         );
     }
@@ -244,9 +182,9 @@ async function setCachedItemAbortableSafe<Data = unknown>(
     key: string,
     value: Data,
     signal: AbortSignal,
-): Promise<SafeResult> {
+): Promise<AppResult> {
     if (signal.aborted) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new PromiseAbortedError(
                 "setCachedItemAbortableSafe aborted before start",
             ),
@@ -258,7 +196,7 @@ async function setCachedItemAbortableSafe<Data = unknown>(
         await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new CacheError(error, `Failed to set cached item for key: ${key}`),
         );
     }
@@ -267,9 +205,9 @@ async function setCachedItemAbortableSafe<Data = unknown>(
 async function removeCachedItemAbortableSafe(
     key: string,
     signal: AbortSignal,
-): Promise<SafeResult> {
+): Promise<AppResult> {
     if (signal.aborted) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new PromiseAbortedError(
                 "removeCachedItemAbortableSafe aborted before start",
             ),
@@ -281,7 +219,7 @@ async function removeCachedItemAbortableSafe(
         await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
-        return createSafeErrorResult(
+        return createAppErrorResult(
             new CacheError(
                 error,
                 `Failed to remove cached item for key: ${key}`,
@@ -304,7 +242,7 @@ async function retryFetchSafe<
         retryOptions?: RetryOptions;
         signal: AbortSignal | undefined;
     },
-): Promise<SafeResult<Data>> {
+): Promise<AppResult<Data>> {
     const {
         backOffFactor = 2,
         retries = 3,
@@ -313,7 +251,7 @@ async function retryFetchSafe<
 
     async function tryAgain(
         attempt: number,
-    ): Promise<SafeResult<Data>> {
+    ): Promise<AppResult<Data>> {
         try {
             const response: Response = await fetch(input, {
                 ...init,
@@ -340,7 +278,7 @@ async function retryFetchSafe<
             } catch (error_: unknown) {
                 if (attempt === retries) {
                     return Promise.resolve(
-                        createSafeErrorResult(
+                        createAppErrorResult(
                             new JSONError(
                                 error_,
                                 "Failed to parse JSON response after maximum retries",
@@ -354,7 +292,7 @@ async function retryFetchSafe<
         } catch (error: unknown) {
             if (attempt === retries) {
                 return Promise.resolve(
-                    createSafeErrorResult(
+                    createAppErrorResult(
                         new NetworkError(error, 503, "Max retries reached"),
                     ),
                 );
@@ -400,7 +338,7 @@ function sendMessageToWorker<
             dispatch({
                 action: actions.setSafeErrorMaybe,
                 payload: Some(
-                    createSafeErrorResult(
+                    createAppErrorResult(
                         new NotFoundError(
                             `Worker is not initialized for message: ${
                                 String(message)
@@ -420,7 +358,7 @@ function sendMessageToWorker<
         dispatch({
             action: actions.setSafeErrorMaybe,
             payload: Some(
-                createSafeErrorResult(
+                createAppErrorResult(
                     new WorkerMessageError(
                         error,
                         `Failed to post message: ${String(message)} to worker`,
@@ -433,7 +371,7 @@ function sendMessageToWorker<
 }
 
 export {
-    createSafeErrorResult,
+    createAppErrorResult,
     createSafeSuccessResult,
     getCachedItemAbortableSafe,
     parseDispatchAndSetState,

@@ -17,7 +17,7 @@ function getErrorStack(error: unknown): string {
     return "Stack trace not available";
 }
 
-abstract class SafeErrorBase {
+abstract class AppErrorBase {
     abstract readonly _tag: string;
     public readonly name: string;
     public readonly message: string;
@@ -43,7 +43,7 @@ abstract class SafeErrorBase {
     }
 }
 
-class AuthError extends SafeErrorBase {
+class AuthError extends AppErrorBase {
     readonly _tag = "AuthError";
 
     constructor(
@@ -59,7 +59,7 @@ class AuthError extends SafeErrorBase {
     }
 }
 
-class ValidationError extends SafeErrorBase {
+class ValidationError extends AppErrorBase {
     readonly _tag = "ValidationError";
 
     constructor(error?: unknown, message = "Validation error occurred") {
@@ -72,7 +72,7 @@ class ValidationError extends SafeErrorBase {
     }
 }
 
-class DatabaseError extends SafeErrorBase {
+class DatabaseError extends AppErrorBase {
     readonly _tag = "DatabaseError";
 
     constructor(
@@ -90,7 +90,7 @@ class DatabaseError extends SafeErrorBase {
     }
 }
 
-class NotFoundError extends SafeErrorBase {
+class NotFoundError extends AppErrorBase {
     readonly _tag = "NotFoundError";
 
     constructor(error?: unknown, message = "Resource not found") {
@@ -103,7 +103,7 @@ class NotFoundError extends SafeErrorBase {
     }
 }
 
-class NetworkError extends SafeErrorBase {
+class NetworkError extends AppErrorBase {
     readonly _tag = "NetworkError";
 
     constructor(
@@ -121,7 +121,7 @@ class NetworkError extends SafeErrorBase {
     }
 }
 
-class TokenCreationError extends SafeErrorBase {
+class TokenCreationError extends AppErrorBase {
     readonly _tag = "TokenCreationError";
 
     constructor(error?: unknown, message = "Token creation error occurred") {
@@ -134,7 +134,7 @@ class TokenCreationError extends SafeErrorBase {
     }
 }
 
-class TokenDecodeError extends SafeErrorBase {
+class TokenDecodeError extends AppErrorBase {
     readonly _tag = "TokenDecodeError";
 
     constructor(error?: unknown, message = "Token decoding error occurred") {
@@ -147,7 +147,7 @@ class TokenDecodeError extends SafeErrorBase {
     }
 }
 
-class TokenVerificationError extends SafeErrorBase {
+class TokenVerificationError extends AppErrorBase {
     readonly _tag = "TokenVerificationError";
 
     constructor(
@@ -163,7 +163,7 @@ class TokenVerificationError extends SafeErrorBase {
     }
 }
 
-class TokenSignatureError extends SafeErrorBase {
+class TokenSignatureError extends AppErrorBase {
     readonly _tag = "TokenSignatureError";
 
     constructor(
@@ -179,7 +179,7 @@ class TokenSignatureError extends SafeErrorBase {
     }
 }
 
-class TimeoutError extends SafeErrorBase {
+class TimeoutError extends AppErrorBase {
     readonly _tag = "TimeoutError";
 
     constructor(error?: unknown, message = "Operation timed out") {
@@ -192,7 +192,7 @@ class TimeoutError extends SafeErrorBase {
     }
 }
 
-class PromiseRejectionError extends SafeErrorBase {
+class PromiseRejectionError extends AppErrorBase {
     readonly _tag = "PromiseRejectionError";
 
     constructor(error?: unknown, message = "Unhandled promise rejection") {
@@ -205,7 +205,7 @@ class PromiseRejectionError extends SafeErrorBase {
     }
 }
 
-class PromiseAbortedError extends SafeErrorBase {
+class PromiseAbortedError extends AppErrorBase {
     readonly _tag = "PromiseAbortedError";
 
     constructor(error?: unknown, message = "Promise was aborted") {
@@ -218,7 +218,7 @@ class PromiseAbortedError extends SafeErrorBase {
     }
 }
 
-class RetryLimitExceededError extends SafeErrorBase {
+class RetryLimitExceededError extends AppErrorBase {
     readonly _tag = "RetryLimitExceededError";
 
     constructor(error?: unknown, message = "Retry limit exceeded") {
@@ -231,7 +231,7 @@ class RetryLimitExceededError extends SafeErrorBase {
     }
 }
 
-class HashComparisonError extends SafeErrorBase {
+class HashComparisonError extends AppErrorBase {
     readonly _tag = "HashComparisonError";
 
     constructor(error?: unknown, message = "Hash comparison error occurred") {
@@ -244,7 +244,7 @@ class HashComparisonError extends SafeErrorBase {
     }
 }
 
-class HashGenerationError extends SafeErrorBase {
+class HashGenerationError extends AppErrorBase {
     readonly _tag = "HashGenerationError";
 
     constructor(error?: unknown, message = "Hash generation error occurred") {
@@ -257,7 +257,7 @@ class HashGenerationError extends SafeErrorBase {
     }
 }
 
-class AbortError extends SafeErrorBase {
+class AbortError extends AppErrorBase {
     readonly _tag = "AbortError";
 
     constructor(error?: unknown, message = "Operation was aborted") {
@@ -270,7 +270,7 @@ class AbortError extends SafeErrorBase {
     }
 }
 
-class CacheError extends SafeErrorBase {
+class CacheError extends AppErrorBase {
     readonly _tag = "CacheError";
 
     constructor(error?: unknown, message = "Cache error occurred") {
@@ -283,7 +283,7 @@ class CacheError extends SafeErrorBase {
     }
 }
 
-class JSONError extends SafeErrorBase {
+class JSONError extends AppErrorBase {
     readonly _tag = "JSONError";
 
     constructor(error?: unknown, message = "JSON error occurred") {
@@ -296,7 +296,7 @@ class JSONError extends SafeErrorBase {
     }
 }
 
-class ParseError extends SafeErrorBase {
+class ParseError extends AppErrorBase {
     readonly _tag = "ParseError";
 
     constructor(error?: unknown, message = "Parse error occurred") {
@@ -309,7 +309,7 @@ class ParseError extends SafeErrorBase {
     }
 }
 
-class InvariantError extends SafeErrorBase {
+class InvariantError extends AppErrorBase {
     readonly _tag = "InvariantError";
 
     constructor(error?: unknown, message = "Invariant error occurred") {
@@ -322,7 +322,7 @@ class InvariantError extends SafeErrorBase {
     }
 }
 
-class HTTPError extends SafeErrorBase {
+class HTTPError extends AppErrorBase {
     readonly _tag = "HTTPError";
 
     constructor(
@@ -338,7 +338,7 @@ class HTTPError extends SafeErrorBase {
     }
 }
 
-class UnknownError extends SafeErrorBase {
+class UnknownError extends AppErrorBase {
     readonly _tag = "UnknownError";
 
     constructor(error?: unknown, message = "An unknown error occurred") {
@@ -351,7 +351,7 @@ class UnknownError extends SafeErrorBase {
     }
 }
 
-class WorkerError extends SafeErrorBase {
+class WorkerError extends AppErrorBase {
     readonly _tag = "WorkerError";
 
     constructor(error?: unknown, message = "Worker error occurred") {
@@ -364,7 +364,7 @@ class WorkerError extends SafeErrorBase {
     }
 }
 
-class WorkerMessageError extends SafeErrorBase {
+class WorkerMessageError extends AppErrorBase {
     readonly _tag = "WorkerMessageError";
 
     constructor(error?: unknown, message = "Worker message error occurred") {
@@ -377,7 +377,7 @@ class WorkerMessageError extends SafeErrorBase {
     }
 }
 
-class WorkerMessageHandlerError extends SafeErrorBase {
+class WorkerMessageHandlerError extends AppErrorBase {
     readonly _tag = "WorkerMessageHandlerError";
 
     constructor(
@@ -395,6 +395,7 @@ class WorkerMessageHandlerError extends SafeErrorBase {
 
 export {
     AbortError,
+    AppErrorBase,
     AuthError,
     CacheError,
     DatabaseError,
@@ -409,7 +410,6 @@ export {
     PromiseAbortedError,
     PromiseRejectionError,
     RetryLimitExceededError,
-    SafeErrorBase,
     TimeoutError,
     TokenCreationError,
     TokenDecodeError,

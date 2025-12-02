@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import type { Err } from "ts-results";
-import { type SafeErrorBase } from "../../errors";
+import { type AppErrorBase } from "../../errors";
 
 type ErrorFallbackProps = {
-    error: Err<SafeErrorBase>;
+    error: Err<AppErrorBase>;
     resetErrorBoundary: () => void;
 };
 

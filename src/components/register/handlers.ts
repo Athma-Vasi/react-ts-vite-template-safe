@@ -1,7 +1,7 @@
 import React from "react";
 import { None, Some } from "ts-results";
 import { WorkerMessageHandlerError } from "../../errors";
-import { createSafeErrorResult } from "../../utils";
+import { createAppErrorResult } from "../../utils";
 import type { MessageEventFetchWorkerToMain } from "../../workers/fetchWorker";
 import type { MessageEventForageWorkerToMain } from "../../workers/forageWorker";
 import type { ErrorDispatch } from "../error/dispatches";
@@ -95,7 +95,7 @@ async function handleMessageFromFetchWorker(
         registerDispatch({
             action: registerActions.setSafeErrorMaybe,
             payload: Some(
-                createSafeErrorResult(
+                createAppErrorResult(
                     new WorkerMessageHandlerError(
                         error,
                         "Error handling message from Fetch Worker",

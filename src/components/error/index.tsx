@@ -76,6 +76,12 @@ function ErrorSuspenseHOC<
                     console.group("onReset triggered");
                     console.log("details", details);
                     console.groupEnd();
+                }}
+                onError={(error, info) => {
+                    console.group("onError triggered");
+                    console.log("error", error);
+                    console.log("info", info);
+                    console.groupEnd();
 
                     if (loggerWorkerMaybe.some) {
                         loggerWorkerMaybe.val.postMessage({
@@ -83,12 +89,6 @@ function ErrorSuspenseHOC<
                             requestInit: {},
                         });
                     }
-                }}
-                onError={(error, info) => {
-                    console.group("onError triggered");
-                    console.log("error", error);
-                    console.log("info", info);
-                    console.groupEnd();
                 }}
             >
                 <Suspense fallback={<div>Loading...</div>}>

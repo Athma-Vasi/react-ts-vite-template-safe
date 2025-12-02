@@ -1,5 +1,5 @@
 import { type Err, None, type Option } from "ts-results";
-import type { ResponseData, SafeError } from "../../types";
+import type { AppError, ResponseData } from "../../types";
 
 type RegisterState = {
     // handles all storage operations
@@ -11,7 +11,7 @@ type RegisterState = {
     isLoading: boolean;
     password: string;
     responseDataMaybe: Option<Array<ResponseData>>;
-    safeErrorMaybe: Option<Err<SafeError>>;
+    safeErrorMaybe: Option<Err<AppError>>;
     username: string;
 };
 
