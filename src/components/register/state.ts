@@ -9,6 +9,7 @@ type RegisterState = {
     // handles all storage operations
     forageWorkerMaybe: Option<Worker>;
     isLoading: boolean;
+    // input names that allow focus management after seamless errorHOC recovery
     lastActiveInput: "username" | "password";
     password: string;
     responseDataMaybe: Option<Array<ResponseData>>;

@@ -23,7 +23,7 @@ type AccessibleTextInputProps<
         errorAction: ErrorAction;
         errorDispatch: React.ActionDispatch<[dispatch: {
             action: ErrorAction;
-            payload: Record<string, Payload>;
+            payload: Record<string, Payload | Name>;
         }]>;
         hideLabel?: boolean;
         label?: string;
@@ -124,11 +124,6 @@ function AccessibleTextInput<
                     action: errorAction,
                     payload: {
                         [name]: value as Payload,
-                    },
-                });
-                errorDispatch({
-                    action: errorAction,
-                    payload: {
                         "lastActiveInput": name as Payload,
                     },
                 });
