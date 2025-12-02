@@ -101,7 +101,11 @@ function AccessibleTextInput<
             aria-describedby={describedByIds}
             aria-errormessage={`${name}-invalid-text`}
             aria-invalid={!isValueValid}
-            className={!isValueValid ? "input-error-state" : ""}
+            className={!isValueValid
+                ? "input--error-state"
+                : value.length === 0
+                ? "input--empty-state"
+                : "input--valid-state"}
             data-testid={dataTestId}
             name={name}
             onBlur={(event: React.FocusEvent<HTMLInputElement, Element>) => {
