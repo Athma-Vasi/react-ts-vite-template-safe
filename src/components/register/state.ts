@@ -2,13 +2,14 @@ import { type Err, None, type Option } from "ts-results";
 import type { AppError, ResponseData } from "../../types";
 
 type RegisterState = {
-    // handles all storage operations
-    forageWorkerMaybe: Option<Worker>;
     // handles caching operations
     cacheWorkerMaybe: Option<Worker>;
     // handles fetch operations
     fetchWorkerMaybe: Option<Worker>;
+    // handles all storage operations
+    forageWorkerMaybe: Option<Worker>;
     isLoading: boolean;
+    lastActiveInput: "username" | "password";
     password: string;
     responseDataMaybe: Option<Array<ResponseData>>;
     safeErrorMaybe: Option<Err<AppError>>;
@@ -16,10 +17,11 @@ type RegisterState = {
 };
 
 const initialRegisterState: RegisterState = {
-    forageWorkerMaybe: None,
     cacheWorkerMaybe: None,
     fetchWorkerMaybe: None,
+    forageWorkerMaybe: None,
     isLoading: false,
+    lastActiveInput: "username",
     password: "",
     responseDataMaybe: None,
     safeErrorMaybe: None,

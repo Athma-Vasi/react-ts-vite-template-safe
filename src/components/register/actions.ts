@@ -12,6 +12,7 @@ const registerActions: RegisterActions = {
     setCacheWorkerMaybe: "setCacheWorkerMaybe",
     setFetchWorkerMaybe: "setFetchWorkerMaybe",
     setIsLoading: "setIsLoading",
+    setLastActiveInput: "setLastActiveInput",
     setPassword: "setPassword",
     setResponseDataMaybe: "setResponseDataMaybe",
     setSafeErrorMaybe: "setSafeErrorMaybe",

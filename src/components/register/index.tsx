@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { Some } from "ts-results";
 import { HTTPError } from "../../errors";
 import { useMountedRef } from "../../hooks/useMountedRef";
@@ -56,6 +56,7 @@ function Register(
         cacheWorkerMaybe,
         fetchWorkerMaybe,
         isLoading,
+        lastActiveInput,
         password,
         responseDataMaybe,
         safeErrorMaybe,
@@ -157,13 +158,43 @@ function Register(
         });
     }, [username]);
 
+    useEffect(() => {
+        // simulate random error for testing ErrorBoundary HOC
+        const isError = Math.random() < 0.5;
+        if (!isError || !password) {
+            return;
+        }
+
+        registerDispatch({
+            action: registerActions.setSafeErrorMaybe,
+            payload: Some(
+                createAppErrorResult(
+                    new HTTPError(
+                        new Error(),
+                        "Simulated random error occurred.",
+                    ),
+                ),
+            ),
+        });
+    }, [password]);
+
+    const usernameInputRef = useRef<HTMLInputElement | null>(null);
+    const passwordInputRef = useRef<HTMLInputElement | null>(null);
+    useEffect(() => {
+        if (lastActiveInput === "password") {
+            passwordInputRef.current?.focus?.();
+            return;
+        }
+
+        usernameInputRef.current?.focus?.();
+    }, []);
+
     if (safeErrorMaybe.some) {
         throw safeErrorMaybe.val;
     }
 
     const usernameElement = (
         <AccessibleTextInput
-            action={registerActions.setUsername}
             errorAction={errorActions.setChildComponentState}
             dispatch={registerDispatch}
             errorDispatch={errorDispatch}
@@ -192,6 +223,9 @@ function Register(
                     workerMaybe: forageWorkerMaybe,
                 });
             }}
+            ref={usernameInputRef}
+            setLastActiveInputAction={registerActions.setLastActiveInput}
+            setValueAction={registerActions.setUsername}
             type="text"
             validationRegexes={username_validation_regexes}
             value={username}
@@ -200,7 +234,6 @@ function Register(
 
     const passwordElement = (
         <AccessibleTextInput
-            action={registerActions.setPassword}
             dispatch={registerDispatch}
             errorAction={errorActions.setChildComponentState}
             errorDispatch={errorDispatch}
@@ -219,6 +252,9 @@ function Register(
                     workerMaybe: cacheWorkerMaybe,
                 });
             }}
+            ref={passwordInputRef}
+            setLastActiveInputAction={registerActions.setLastActiveInput}
+            setValueAction={registerActions.setPassword}
             type="password"
             validationRegexes={password_validation_regexes}
             value={password}

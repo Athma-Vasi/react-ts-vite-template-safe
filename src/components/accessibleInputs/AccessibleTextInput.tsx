@@ -2,10 +2,12 @@ import React, { type JSX } from "react";
 import type { ValidationRegexes } from "../../types";
 
 type AccessibleTextInputProps<
-    Action extends string = string,
+    SetValueAction extends string = string,
     Payload extends string = string,
+    SetLastActiveInputAction extends string = string,
+    Name extends string = string,
     Dispatch = {
-        action: Action;
+        action: SetValueAction | SetLastActiveInputAction;
         payload: Payload;
     },
     ErrorAction extends string = string,
@@ -15,7 +17,6 @@ type AccessibleTextInputProps<
         HTMLInputElement
     >
     & {
-        action: Action;
         dataTestId?: string;
         disableValidationScreenreaderText?: boolean;
         dispatch: React.ActionDispatch<[dispatch: Dispatch]>;
@@ -27,23 +28,33 @@ type AccessibleTextInputProps<
         hideLabel?: boolean;
         label?: string;
         name: string;
+        setLastActiveInputAction: SetLastActiveInputAction;
+        setValueAction: SetValueAction;
         validationRegexes?: Array<[RegExp, string]>;
         value: Payload;
     };
 
 function AccessibleTextInput<
-    Action extends string = string,
+    SetValueAction extends string = string,
     Payload extends string = string,
+    SetLastActiveInputAction extends string = string,
+    Name extends string = string,
     Dispatch = {
-        action: Action;
-        payload: Payload;
+        action: SetValueAction | SetLastActiveInputAction;
+        payload: Payload | Name;
     },
     ErrorAction extends string = string,
 >(
-    props: AccessibleTextInputProps<Action, Payload, Dispatch, ErrorAction>,
+    props: AccessibleTextInputProps<
+        SetValueAction,
+        Payload,
+        SetLastActiveInputAction,
+        Name,
+        Dispatch,
+        ErrorAction
+    >,
 ) {
     const {
-        action,
         dispatch,
         disableValidationScreenreaderText,
         errorAction,
@@ -55,6 +66,8 @@ function AccessibleTextInput<
         onBlur = () => {},
         onChange = () => {},
         onFocus = () => {},
+        setLastActiveInputAction,
+        setValueAction,
         validationRegexes = [],
         value = "",
         ...textInputProps
@@ -99,14 +112,24 @@ function AccessibleTextInput<
                 const { currentTarget: { value } } = event;
 
                 dispatch({
-                    action,
+                    action: setValueAction,
                     payload: value as Payload,
+                } as Dispatch);
+                dispatch({
+                    action: setLastActiveInputAction,
+                    payload: name as Name,
                 } as Dispatch);
 
                 errorDispatch({
                     action: errorAction,
                     payload: {
                         [name]: value as Payload,
+                    },
+                });
+                errorDispatch({
+                    action: errorAction,
+                    payload: {
+                        "lastActiveInput": name as Payload,
                     },
                 });
 

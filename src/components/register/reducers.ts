@@ -6,6 +6,7 @@ import {
     setFetchWorkerMaybeRegisterDispatchSchema,
     setForageWorkerMaybeRegisterDispatchSchema,
     setIsLoadingRegisterDispatchSchema,
+    setLastActiveInputRegisterDispatchSchema,
     setPasswordRegisterDispatchSchema,
     setResponseDataMaybeRegisterDispatchSchema,
     setSafeErrorMaybeRegisterDispatchSchema,
@@ -32,6 +33,7 @@ const registerReducersMap: Map<
     [registerActions.setCacheWorkerMaybe, registerReducer_setCacheWorkerMaybe],
     [registerActions.setFetchWorkerMaybe, registerReducer_setFetchWorkerMaybe],
     [registerActions.setIsLoading, registerReducer_setIsLoading],
+    [registerActions.setLastActiveInput, registerReducer_setLastActiveInput],
     [registerActions.setPassword, registerReducer_setPassword],
     [
         registerActions.setResponseDataMaybe,
@@ -89,6 +91,18 @@ function registerReducer_setIsLoading(
     });
 }
 
+function registerReducer_setLastActiveInput(
+    state: RegisterState,
+    dispatch: RegisterDispatch,
+): RegisterState {
+    return parseDispatchAndSetState({
+        dispatch,
+        key: "lastActiveInput",
+        state,
+        schema: setLastActiveInputRegisterDispatchSchema,
+    });
+}
+
 function registerReducer_setPassword(
     state: RegisterState,
     dispatch: RegisterDispatch,
@@ -143,6 +157,7 @@ export {
     registerReducer_setFetchWorkerMaybe,
     registerReducer_setForageWorkerMaybe,
     registerReducer_setIsLoading,
+    registerReducer_setLastActiveInput,
     registerReducer_setPassword,
     registerReducer_setResponseDataMaybe,
     registerReducer_setSafeErrorMaybe,

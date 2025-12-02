@@ -23,6 +23,11 @@ const setIsLoadingRegisterDispatchSchema = z.object({
     payload: z.boolean(),
 });
 
+const setLastActiveInputRegisterDispatchSchema = z.object({
+    action: z.literal(registerActions.setLastActiveInput),
+    payload: z.enum(["username", "password"]),
+});
+
 const setPasswordRegisterDispatchSchema = z.object({
     action: z.literal(registerActions.setPassword),
     payload: z.string(),
@@ -54,6 +59,7 @@ type RegisterDispatch =
     | z.infer<typeof setCacheWorkerMaybeRegisterDispatchSchema>
     | z.infer<typeof setFetchWorkerMaybeRegisterDispatchSchema>
     | z.infer<typeof setIsLoadingRegisterDispatchSchema>
+    | z.infer<typeof setLastActiveInputRegisterDispatchSchema>
     | z.infer<typeof setPasswordRegisterDispatchSchema>
     | z.infer<typeof setResponseDataMaybeRegisterDispatchSchema>
     | z.infer<typeof setSafeErrorMaybeRegisterDispatchSchema>
@@ -65,6 +71,7 @@ export {
     setFetchWorkerMaybeRegisterDispatchSchema,
     setForageWorkerMaybeRegisterDispatchSchema,
     setIsLoadingRegisterDispatchSchema,
+    setLastActiveInputRegisterDispatchSchema,
     setPasswordRegisterDispatchSchema,
     setResponseDataMaybeRegisterDispatchSchema,
     setSafeErrorMaybeRegisterDispatchSchema,
