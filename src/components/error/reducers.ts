@@ -1,8 +1,11 @@
-import { parseSyncSafe } from "../../utils";
+import { parseDispatchAndSetState, parseSyncSafe } from "../../utils";
 import type { ErrorActions } from "./actions";
 import { errorActions } from "./actions";
 import type { ErrorDispatch } from "./dispatches";
-import { setChildComponentStateErrorDispatchSchema } from "./dispatches";
+import {
+    setChildComponentStateErrorDispatchSchema,
+    setLoggerWorkerMaybeErrorDispatchSchema,
+} from "./dispatches";
 import type { ErrorState } from "./state";
 
 function errorReducer(
@@ -18,6 +21,7 @@ const errorReducersMap: Map<
     (state: ErrorState, dispatch: ErrorDispatch) => ErrorState
 > = new Map([
     [errorActions.setChildComponentState, errorReducer_setChildComponentState],
+    [errorActions.setLoggerWorkerMaybe, errorReducer_setLoggerWorkerMaybe],
 ]);
 
 function errorReducer_setChildComponentState(
@@ -46,4 +50,21 @@ function errorReducer_setChildComponentState(
     };
 }
 
-export { errorReducer, errorReducer_setChildComponentState, errorReducersMap };
+function errorReducer_setLoggerWorkerMaybe(
+    state: ErrorState,
+    dispatch: ErrorDispatch,
+): ErrorState {
+    return parseDispatchAndSetState({
+        state,
+        dispatch,
+        key: "loggerWorkerMaybe",
+        schema: setLoggerWorkerMaybeErrorDispatchSchema,
+    });
+}
+
+export {
+    errorReducer,
+    errorReducer_setChildComponentState,
+    errorReducer_setLoggerWorkerMaybe,
+    errorReducersMap,
+};

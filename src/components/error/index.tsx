@@ -1,7 +1,12 @@
-import { Suspense, useReducer } from "react";
+import { Suspense, useEffect, useReducer } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { Some } from "ts-results";
+import { useMountedRef } from "../../hooks/useMountedRef";
 import type { ErrorDispatch } from "./dispatches";
 import ErrorFallback from "./ErrorFallback";
+import { handleMessageFromLoggerWorker } from "./handlers";
+import { type MessageEventLoggerWorkerToMain } from "./loggerWorker";
+import LoggerWorker from "./loggerWorker?worker";
 import { errorReducer } from "./reducers";
 import { initialErrorState } from "./state";
 
@@ -12,7 +17,6 @@ function ErrorSuspenseHOC<
     >,
 >(
     Component: React.ComponentType<{
-        // initialChildComponentState: Props;
         childComponentState: Props;
         errorDispatch: React.Dispatch<ErrorDispatch>;
     }>,
@@ -22,7 +26,35 @@ function ErrorSuspenseHOC<
             errorState,
             errorDispatch,
         ] = useReducer(errorReducer, initialErrorState);
-        const { childComponentState } = errorState;
+        const { childComponentState, loggerWorkerMaybe } = errorState;
+
+        const isComponentMountedRef = useMountedRef();
+
+        useEffect(() => {
+            if (loggerWorkerMaybe.some) {
+                return;
+            }
+
+            const loggerWorker = new LoggerWorker();
+            errorDispatch({
+                action: "setLoggerWorkerMaybe",
+                payload: Some(loggerWorker),
+            });
+            loggerWorker.onmessage = async (
+                event: MessageEventLoggerWorkerToMain,
+            ) => {
+                await handleMessageFromLoggerWorker({
+                    errorDispatch,
+                    event,
+                    isComponentMountedRef,
+                });
+            };
+
+            return () => {
+                loggerWorker.terminate();
+                isComponentMountedRef.current = false;
+            };
+        }, []);
 
         const propsModified = {
             childComponentState: {
@@ -44,6 +76,13 @@ function ErrorSuspenseHOC<
                     console.group("onReset triggered");
                     console.log("details", details);
                     console.groupEnd();
+
+                    if (loggerWorkerMaybe.some) {
+                        loggerWorkerMaybe.val.postMessage({
+                            url: "/test-url",
+                            requestInit: {},
+                        });
+                    }
                 }}
                 onError={(error, info) => {
                     console.group("onError triggered");

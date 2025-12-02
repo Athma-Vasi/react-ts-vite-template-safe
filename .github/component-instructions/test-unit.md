@@ -1,104 +1,88 @@
-# Unit Test Generation Guide 🎯
+# Unit Test Generation Guide
 
-## 📋 Purpose
+Generate comprehensive Vitest unit tests for reducer functions in
+`{componentName}.test.ts` within the component directory.
 
-Generate comprehensive Vitest unit tests for reducer functions. Tests should
-validate that reducers correctly handle both valid and invalid inputs, ensuring
-type safety and proper state updates through the `parseDispatchAndSetState`
-utility.
+## Pattern
 
-## 📍 File Location
-
-- **Create** `{componentName}.test.ts` in the component's directory
-- **Example**: `src/components/login/login.test.ts`
-- **Convention**: Test file should be named after the component folder, not
-  individual files
-
-## 🎯 Basic Pattern
-
-Given a state type **LoginState** with fields:
-
-```typescript
-type LoginState = {
-    forageWorker: Worker | null;
-    isLoading: boolean;
-    username: string;
-};
-```
-
-Generate the following in `login.test.ts`:
+**Naming**: `{componentName}.test.ts` (named after component folder)\
+**Location**: `src/components/{component}/{componentName}.test.ts`\
+**Framework**: Vitest with `describe`, `it`, `expect`\
+**Order**: Test suites alphabetically sorted by action name\
+**Coverage**: Test both valid inputs (state updates) and invalid inputs (state
+unchanged)
 
 ```typescript
 import { describe, expect, it } from "vitest";
-import { loginAction } from "./actions";
+import { loginActions } from "./actions";
 import {
-    setForageWorkerLoginDispatchSchema,
+    setForageWorkerMaybeLoginDispatchSchema,
     setIsLoadingLoginDispatchSchema,
     setUsernameLoginDispatchSchema,
 } from "./dispatches";
 import {
-    loginReducer_setForageWorker,
+    loginReducer_setForageWorkerMaybe,
     loginReducer_setIsLoading,
     loginReducer_setUsername,
 } from "./reducers";
 import { initialLoginState } from "./state";
 import {
-    INVALID_BOOLEANS,
-    INVALID_STRINGS,
-    VALID_BOOLEANS,
-    VALID_STRINGS,
+    invalid_booleans,
+    invalid_strings,
+    valid_booleans,
+    valid_strings,
 } from "../../constants";
 
 describe("loginReducer", () => {
-    describe(loginAction.setForageWorker, () => {
+    describe(loginActions.setForageWorkerMaybe, () => {
         it("should allow valid Worker instance", () => {
             const worker = new Worker("");
             const dispatch = {
-                action: loginAction.setForageWorker,
+                action: loginActions.setForageWorkerMaybe,
                 payload: worker,
             };
-            const state = loginReducer_setForageWorker(
+            const state = loginReducer_setForageWorkerMaybe(
                 initialLoginState,
                 dispatch,
             );
-            expect(state.forageWorker).toBe(worker);
+            expect(state.forageWorkerMaybe).toBe(worker);
         });
 
         it("should allow null value", () => {
             const dispatch = {
-                action: loginAction.setForageWorker,
+                action: loginActions.setForageWorkerMaybe,
                 payload: null,
             };
-            const state = loginReducer_setForageWorker(
+            const state = loginReducer_setForageWorkerMaybe(
                 initialLoginState,
                 dispatch,
             );
-            expect(state.forageWorker).toBe(null);
+            expect(state.forageWorkerMaybe).toBe(null);
         });
 
         it("should not allow invalid Worker values", () => {
-            const initialWorker = initialLoginState.forageWorker;
+            const initial = initialLoginState.forageWorkerMaybe;
             const invalidValues = ["not a worker", 123, {}, []];
 
             invalidValues.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setForageWorker,
+                    action: loginActions.setForageWorkerMaybe,
                     payload: value,
                 };
-                const state = loginReducer_setForageWorker(
+                const state = loginReducer_setForageWorkerMaybe(
                     initialLoginState,
                     dispatch as any,
                 );
-                expect(state.forageWorker).toBe(initialWorker);
+                expect(state.forageWorkerMaybe).toBe(initial);
             });
         });
     });
 
-    describe(loginAction.setIsLoading, () => {
+    describe(loginActions.setIsLoading, () => {
         it("should allow valid boolean values", () => {
-            VALID_BOOLEANS.forEach((value) => {
+            valid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setIsLoading,
+                    action: loginActions.setIsLoading,
                     payload: value,
                 };
                 const state = loginReducer_setIsLoading(
@@ -110,27 +94,27 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid boolean values", () => {
-            const initialIsLoading = initialLoginState.isLoading;
+            const initial = initialLoginState.isLoading;
 
-            INVALID_BOOLEANS.forEach((value) => {
+            invalid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setIsLoading,
+                    action: loginActions.setIsLoading,
                     payload: value,
                 };
                 const state = loginReducer_setIsLoading(
                     initialLoginState,
                     dispatch as any,
                 );
-                expect(state.isLoading).toBe(initialIsLoading);
+                expect(state.isLoading).toBe(initial);
             });
         });
     });
 
-    describe(loginAction.setUsername, () => {
+    describe(loginActions.setUsername, () => {
         it("should allow valid string values", () => {
-            VALID_STRINGS.forEach((value) => {
+            valid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setUsername,
+                    action: loginActions.setUsername,
                     payload: value,
                 };
                 const state = loginReducer_setUsername(
@@ -142,71 +126,75 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid string values", () => {
-            const initialUsername = initialLoginState.username;
+            const initial = initialLoginState.username;
 
-            INVALID_STRINGS.forEach((value) => {
+            invalid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setUsername,
+                    action: loginActions.setUsername,
                     payload: value,
                 };
                 const state = loginReducer_setUsername(
                     initialLoginState,
                     dispatch as any,
                 );
-                expect(state.username).toBe(initialUsername);
+                expect(state.username).toBe(initial);
             });
         });
     });
 });
 ```
 
-**Key Points**:
+## Test Patterns by Type
 
-- Test suites are sorted **alphabetically** by action name
-- Each action gets a `describe` block
-- Test both valid and invalid inputs
-- Use constants from `../../constants` for test data
-- Use `as any` type assertion for invalid value tests
-- Verify state remains unchanged for invalid inputs
+| Type          | Valid Test Data                               | Invalid Test Data               | Assertion   |
+| ------------- | --------------------------------------------- | ------------------------------- | ----------- |
+| `string`      | `valid_strings` constant                      | `invalid_strings` constant      | `toBe()`    |
+| `number`      | `valid_numbers` constant                      | `invalid_numbers` constant      | `toBe()`    |
+| `boolean`     | `valid_booleans` constant                     | `invalid_booleans` constant     | `toBe()`    |
+| `T \| null`   | Valid instance + `null`                       | `["invalid", 123, {}, []]`      | `toBe()`    |
+| `T[]`         | `[[], [item], [item1, item2]]`                | `["not array", 123, null, {}]`  | `toEqual()` |
+| `Record<K,V>` | `[{}, {key: "value"}]`                        | `["not object", 123, null, []]` | `toEqual()` |
+| `"a" \| "b"`  | `["a", "b"]`                                  | `["invalid", "c", 123, null]`   | `toBe()`    |
+| `{...}`       | Objects matching shape                        | `["not object", 123, null, []]` | `toEqual()` |
+| `Worker`      | `new Worker("")`                              | `["not worker", 123, {}, []]`   | `toBe()`    |
+| `Option<T>`   | Valid value + `null` (Option from ts-results) | Invalid type values             | `toBe()`    |
 
-## ➕ Adding to Existing Tests
+## Rules
 
-If `login.test.ts` already exists with tests for `username` and `isLoading`, and
-you need to add tests for `password: string`:
+1. ✅ Name test file after component folder: `login.test.ts`, not
+   `state.test.ts`
+2. ✅ Alphabetize `describe` blocks by action name
+3. ✅ Test both valid (state updates) and invalid (state unchanged) inputs
+4. ✅ Import test constants from `../../constants` (lowercase_snake_case)
+5. ✅ Use `as any` for invalid value tests to bypass TypeScript
+6. ✅ Save initial value before testing invalid inputs
+7. ✅ Use `toBe()` for primitives, `toEqual()` for arrays/objects
+8. ❌ Never skip invalid input tests
+9. ❌ Never forget to save initial state value for comparison
 
-**Add new describe block** maintaining alphabetical order:
+## Adding Fields
+
+Insert new test suite alphabetically:
 
 ```typescript
-import { describe, expect, it } from "vitest";
-import { loginAction } from "./actions";
-import {
-    setIsLoadingLoginDispatchSchema,
-    setPasswordLoginDispatchSchema, // ← New import
-    setUsernameLoginDispatchSchema,
-} from "./dispatches";
-import {
-    loginReducer_setIsLoading,
-    loginReducer_setPassword, // ← New import
-    loginReducer_setUsername,
-} from "./reducers";
-import { initialLoginState } from "./state";
-import {
-    INVALID_BOOLEANS,
-    INVALID_STRINGS,
-    VALID_BOOLEANS,
-    VALID_STRINGS,
-} from "../../constants";
+// Before
+describe("loginReducer", () => {
+    describe(loginActions.setIsLoading, () => {/* ... */});
+    describe(loginActions.setUsername, () => {/* ... */});
+});
+
+// After adding password: string
+import { loginReducer_setPassword } from "./reducers"; // ← Import
+import { setPasswordLoginDispatchSchema } from "./dispatches";
 
 describe("loginReducer", () => {
-    describe(loginAction.setIsLoading, () => {
-        // ... existing tests
-    });
+    describe(loginActions.setIsLoading, () => {/* ... */});
 
-    describe(loginAction.setPassword, () => { // ← New test block
+    describe(loginActions.setPassword, () => { // ← New test suite
         it("should allow valid string values", () => {
-            VALID_STRINGS.forEach((value) => {
+            valid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setPassword,
+                    action: loginActions.setPassword,
                     payload: value,
                 };
                 const state = loginReducer_setPassword(
@@ -218,333 +206,62 @@ describe("loginReducer", () => {
         });
 
         it("should not allow invalid string values", () => {
-            const initialPassword = initialLoginState.password;
-
-            INVALID_STRINGS.forEach((value) => {
+            const initial = initialLoginState.password;
+            invalid_strings.forEach((value) => {
                 const dispatch = {
-                    action: loginAction.setPassword,
+                    action: loginActions.setPassword,
                     payload: value,
                 };
                 const state = loginReducer_setPassword(
                     initialLoginState,
                     dispatch as any,
                 );
-                expect(state.password).toBe(initialPassword);
+                expect(state.password).toBe(initial);
             });
         });
     });
 
-    describe(loginAction.setUsername, () => {
-        // ... existing tests
-    });
+    describe(loginActions.setUsername, () => {/* ... */});
 });
 ```
 
-## 🔧 Test Patterns by Type
-
-Different types require different test approaches:
-
-### Primitives
-
-#### String
+## Examples
 
 ```typescript
-describe(action.setUsername, () => {
-    it("should allow valid string values", () => {
-        VALID_STRINGS.forEach((value) => {
-            const dispatch = { action: action.setUsername, payload: value };
-            const state = reducer_setUsername(initialState, dispatch);
-            expect(state.username).toBe(value);
-        });
-    });
-
-    it("should not allow invalid string values", () => {
-        const initial = initialState.username;
-        INVALID_STRINGS.forEach((value) => {
-            const dispatch = { action: action.setUsername, payload: value };
-            const state = reducer_setUsername(initialState, dispatch as any);
-            expect(state.username).toBe(initial);
-        });
-    });
-});
-```
-
-#### Number
-
-```typescript
-describe(action.setAge, () => {
-    it("should allow valid number values", () => {
-        VALID_NUMBERS.forEach((value) => {
-            const dispatch = { action: action.setAge, payload: value };
-            const state = reducer_setAge(initialState, dispatch);
-            expect(state.age).toBe(value);
-        });
-    });
-
-    it("should not allow invalid number values", () => {
-        const initial = initialState.age;
-        INVALID_NUMBERS.forEach((value) => {
-            const dispatch = { action: action.setAge, payload: value };
-            const state = reducer_setAge(initialState, dispatch as any);
-            expect(state.age).toBe(initial);
-        });
-    });
-});
-```
-
-#### Boolean
-
-```typescript
-describe(action.setIsLoading, () => {
-    it("should allow valid boolean values", () => {
-        VALID_BOOLEANS.forEach((value) => {
-            const dispatch = { action: action.setIsLoading, payload: value };
-            const state = reducer_setIsLoading(initialState, dispatch);
-            expect(state.isLoading).toBe(value);
-        });
-    });
-
-    it("should not allow invalid boolean values", () => {
-        const initial = initialState.isLoading;
-        INVALID_BOOLEANS.forEach((value) => {
-            const dispatch = { action: action.setIsLoading, payload: value };
-            const state = reducer_setIsLoading(initialState, dispatch as any);
-            expect(state.isLoading).toBe(initial);
-        });
-    });
-});
-```
-
-### Nullable Types
-
-```typescript
-describe(action.setWorker, () => {
-    it("should allow valid Worker instance", () => {
-        const worker = new Worker("");
-        const dispatch = { action: action.setWorker, payload: worker };
-        const state = reducer_setWorker(initialState, dispatch);
-        expect(state.worker).toBe(worker);
-    });
-
-    it("should allow null value", () => {
-        const dispatch = { action: action.setWorker, payload: null };
-        const state = reducer_setWorker(initialState, dispatch);
-        expect(state.worker).toBe(null);
-    });
-
-    it("should not allow invalid Worker values", () => {
-        const initial = initialState.worker;
-        const invalidValues = ["not a worker", 123, {}, []];
-        invalidValues.forEach((value) => {
-            const dispatch = { action: action.setWorker, payload: value };
-            const state = reducer_setWorker(initialState, dispatch as any);
-            expect(state.worker).toBe(initial);
-        });
-    });
-});
-```
-
-### Arrays
-
-```typescript
-describe(action.setTags, () => {
-    it("should allow valid string array", () => {
-        const validArrays = [[], ["tag1"], ["tag1", "tag2", "tag3"]];
-        validArrays.forEach((value) => {
-            const dispatch = { action: action.setTags, payload: value };
-            const state = reducer_setTags(initialState, dispatch);
-            expect(state.tags).toEqual(value);
-        });
-    });
-
-    it("should not allow invalid array values", () => {
-        const initial = initialState.tags;
-        const invalidValues = ["not array", 123, null, { array: [] }];
-        invalidValues.forEach((value) => {
-            const dispatch = { action: action.setTags, payload: value };
-            const state = reducer_setTags(initialState, dispatch as any);
-            expect(state.tags).toEqual(initial);
-        });
-    });
-});
-```
-
-### Objects
-
-```typescript
-describe(action.setConfig, () => {
-    it("should allow valid config object", () => {
-        const validConfigs = [
-            { theme: "light", locale: "en" },
-            { theme: "dark", locale: "fr" },
-        ];
-        validConfigs.forEach((value) => {
-            const dispatch = { action: action.setConfig, payload: value };
-            const state = reducer_setConfig(initialState, dispatch);
-            expect(state.config).toEqual(value);
-        });
-    });
-
-    it("should not allow invalid config values", () => {
-        const initial = initialState.config;
-        const invalidValues = ["not object", 123, null, []];
-        invalidValues.forEach((value) => {
-            const dispatch = { action: action.setConfig, payload: value };
-            const state = reducer_setConfig(initialState, dispatch as any);
-            expect(state.config).toEqual(initial);
-        });
-    });
-});
-```
-
-### Union Types
-
-```typescript
-describe(action.setStatus, () => {
-    it("should allow valid status values", () => {
-        const validStatuses = ["idle", "loading", "success", "error"];
-        validStatuses.forEach((value) => {
-            const dispatch = { action: action.setStatus, payload: value };
-            const state = reducer_setStatus(initialState, dispatch);
-            expect(state.status).toBe(value);
-        });
-    });
-
-    it("should not allow invalid status values", () => {
-        const initial = initialState.status;
-        const invalidValues = ["invalid", "pending", 123, null];
-        invalidValues.forEach((value) => {
-            const dispatch = { action: action.setStatus, payload: value };
-            const state = reducer_setStatus(initialState, dispatch as any);
-            expect(state.status).toBe(initial);
-        });
-    });
-});
-```
-
-## ✨ Best Practices
-
-1. **Test Organization**:
-   - One `describe` block per action
-   - Alphabetically sorted describe blocks
-   - Descriptive test names: "should allow valid X values"
-
-2. **Use Constants**: Import validation constants from `../../constants`:
-   - `VALID_STRINGS`, `INVALID_STRINGS`
-   - `VALID_NUMBERS`, `INVALID_NUMBERS`
-   - `VALID_BOOLEANS`, `INVALID_BOOLEANS`
-
-3. **Test Both Paths**:
-   - ✅ Valid inputs → state updates correctly
-   - ✅ Invalid inputs → state remains unchanged
-
-4. **Type Assertions**: Use `as any` for invalid value tests to bypass
-   TypeScript
-
-5. **Initial State**: Save initial value to verify it doesn't change on invalid
-   input
-
-6. **Array/Object Comparison**: Use `toEqual()` instead of `toBe()` for
-   reference types
-
-7. **Edge Cases**: Test edge cases like empty strings, zero, null, undefined
-
-## ⚠️ Common Mistakes
-
-1. **Wrong Comparison Method**: Using `toBe()` for objects/arrays
-   ```typescript
-   // ❌ Wrong - toBe checks reference equality
-   expect(state.tags).toBe(["tag1", "tag2"]);
-
-   // ✅ Correct - toEqual checks deep equality
-   expect(state.tags).toEqual(["tag1", "tag2"]);
-   ```
-
-2. **Missing Type Assertion**: Not using `as any` for invalid tests
-   ```typescript
-   // ❌ Wrong - TypeScript error
-   const dispatch = { action: action.setAge, payload: "invalid" };
-
-   // ✅ Correct
-   const dispatch = { action: action.setAge, payload: "invalid" };
-   const state = reducer(initialState, dispatch as any);
-   ```
-
-3. **Not Testing Invalid Inputs**: Only testing happy path
-   ```typescript
-   // ❌ Incomplete - missing invalid input test
-   it("should allow valid values", () => {/* ... */});
-
-   // ✅ Complete - both paths tested
-   it("should allow valid values", () => {/* ... */});
-   it("should not allow invalid values", () => {/* ... */});
-   ```
-
-4. **Forgetting to Save Initial Value**: Can't verify unchanged state
-   ```typescript
-   // ❌ Wrong - nothing to compare against
-   INVALID_STRINGS.forEach((value) => {
-       const state = reducer(initialState, dispatch as any);
-       expect(state.username).toBe(???);  // What should it be?
-   });
-
-   // ✅ Correct
-   const initialUsername = initialState.username;
-   INVALID_STRINGS.forEach((value) => {
-       const state = reducer(initialState, dispatch as any);
-       expect(state.username).toBe(initialUsername);
-   });
-   ```
-
-5. **Unsorted Test Blocks**: Not maintaining alphabetical order
-   ```typescript
-   // ❌ Wrong
-   describe(action.setUsername, () => {/* ... */});
-   describe(action.setAge, () => {/* ... */});
-   describe(action.setIsLoading, () => {/* ... */});
-
-   // ✅ Correct
-   describe(action.setAge, () => {/* ... */});
-   describe(action.setIsLoading, () => {/* ... */});
-   describe(action.setUsername, () => {/* ... */});
-   ```
-
-## 🎪 Complete Example: Dashboard Tests
-
-```typescript
+// Dashboard with unions, arrays, Options
 import { describe, expect, it } from "vitest";
-import { dashboardAction } from "./actions";
+import { dashboardActions } from "./actions";
 import {
     setCurrentViewDashboardDispatchSchema,
     setErrorMessageDashboardDispatchSchema,
     setIsLoadingDashboardDispatchSchema,
-    setMetricsDataDashboardDispatchSchema,
+    setMetricsDataMaybeDashboardDispatchSchema,
     setSelectedFiltersDashboardDispatchSchema,
-    setWorkerDashboardDispatchSchema,
+    setWorkerMaybeDashboardDispatchSchema,
 } from "./dispatches";
 import {
     dashboardReducer_setCurrentView,
     dashboardReducer_setErrorMessage,
     dashboardReducer_setIsLoading,
-    dashboardReducer_setMetricsData,
+    dashboardReducer_setMetricsDataMaybe,
     dashboardReducer_setSelectedFilters,
-    dashboardReducer_setWorker,
+    dashboardReducer_setWorkerMaybe,
 } from "./reducers";
 import { initialDashboardState } from "./state";
 import {
-    INVALID_BOOLEANS,
-    INVALID_STRINGS,
-    VALID_BOOLEANS,
-    VALID_STRINGS,
+    invalid_booleans,
+    invalid_strings,
+    valid_booleans,
+    valid_strings,
 } from "../../constants";
 
 describe("dashboardReducer", () => {
-    describe(dashboardAction.setCurrentView, () => {
+    describe(dashboardActions.setCurrentView, () => {
         it("should allow valid view values", () => {
             const validViews = ["customers", "products", "financial"];
             validViews.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setCurrentView,
+                    action: dashboardActions.setCurrentView,
                     payload: value,
                 };
                 const state = dashboardReducer_setCurrentView(
@@ -560,7 +277,7 @@ describe("dashboardReducer", () => {
             const invalidViews = ["invalid", "repairs", 123, null];
             invalidViews.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setCurrentView,
+                    action: dashboardActions.setCurrentView,
                     payload: value,
                 };
                 const state = dashboardReducer_setCurrentView(
@@ -572,11 +289,11 @@ describe("dashboardReducer", () => {
         });
     });
 
-    describe(dashboardAction.setErrorMessage, () => {
+    describe(dashboardActions.setErrorMessage, () => {
         it("should allow valid string values", () => {
-            VALID_STRINGS.forEach((value) => {
+            valid_strings.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setErrorMessage,
+                    action: dashboardActions.setErrorMessage,
                     payload: value,
                 };
                 const state = dashboardReducer_setErrorMessage(
@@ -589,9 +306,9 @@ describe("dashboardReducer", () => {
 
         it("should not allow invalid string values", () => {
             const initial = initialDashboardState.errorMessage;
-            INVALID_STRINGS.forEach((value) => {
+            invalid_strings.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setErrorMessage,
+                    action: dashboardActions.setErrorMessage,
                     payload: value,
                 };
                 const state = dashboardReducer_setErrorMessage(
@@ -603,11 +320,11 @@ describe("dashboardReducer", () => {
         });
     });
 
-    describe(dashboardAction.setIsLoading, () => {
+    describe(dashboardActions.setIsLoading, () => {
         it("should allow valid boolean values", () => {
-            VALID_BOOLEANS.forEach((value) => {
+            valid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setIsLoading,
+                    action: dashboardActions.setIsLoading,
                     payload: value,
                 };
                 const state = dashboardReducer_setIsLoading(
@@ -620,9 +337,9 @@ describe("dashboardReducer", () => {
 
         it("should not allow invalid boolean values", () => {
             const initial = initialDashboardState.isLoading;
-            INVALID_BOOLEANS.forEach((value) => {
+            invalid_booleans.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setIsLoading,
+                    action: dashboardActions.setIsLoading,
                     payload: value,
                 };
                 const state = dashboardReducer_setIsLoading(
@@ -634,12 +351,12 @@ describe("dashboardReducer", () => {
         });
     });
 
-    describe(dashboardAction.setSelectedFilters, () => {
+    describe(dashboardActions.setSelectedFilters, () => {
         it("should allow valid string array", () => {
             const validArrays = [[], ["filter1"], ["filter1", "filter2"]];
             validArrays.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setSelectedFilters,
+                    action: dashboardActions.setSelectedFilters,
                     payload: value,
                 };
                 const state = dashboardReducer_setSelectedFilters(
@@ -655,7 +372,7 @@ describe("dashboardReducer", () => {
             const invalidValues = ["not array", 123, null, { filters: [] }];
             invalidValues.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setSelectedFilters,
+                    action: dashboardActions.setSelectedFilters,
                     payload: value,
                 };
                 const state = dashboardReducer_setSelectedFilters(
@@ -667,86 +384,212 @@ describe("dashboardReducer", () => {
         });
     });
 
-    describe(dashboardAction.setWorker, () => {
+    describe(dashboardActions.setWorkerMaybe, () => {
         it("should allow valid Worker instance", () => {
             const worker = new Worker("");
             const dispatch = {
-                action: dashboardAction.setWorker,
+                action: dashboardActions.setWorkerMaybe,
                 payload: worker,
             };
-            const state = dashboardReducer_setWorker(
+            const state = dashboardReducer_setWorkerMaybe(
                 initialDashboardState,
                 dispatch,
             );
-            expect(state.worker).toBe(worker);
+            expect(state.workerMaybe).toBe(worker);
         });
 
         it("should allow null value", () => {
             const dispatch = {
-                action: dashboardAction.setWorker,
+                action: dashboardActions.setWorkerMaybe,
                 payload: null,
             };
-            const state = dashboardReducer_setWorker(
+            const state = dashboardReducer_setWorkerMaybe(
                 initialDashboardState,
                 dispatch,
             );
-            expect(state.worker).toBe(null);
+            expect(state.workerMaybe).toBe(null);
         });
 
         it("should not allow invalid Worker values", () => {
-            const initial = initialDashboardState.worker;
+            const initial = initialDashboardState.workerMaybe;
             const invalidValues = ["not a worker", 123, {}, []];
             invalidValues.forEach((value) => {
                 const dispatch = {
-                    action: dashboardAction.setWorker,
+                    action: dashboardActions.setWorkerMaybe,
                     payload: value,
                 };
-                const state = dashboardReducer_setWorker(
+                const state = dashboardReducer_setWorkerMaybe(
                     initialDashboardState,
                     dispatch as any,
                 );
-                expect(state.worker).toBe(initial);
+                expect(state.workerMaybe).toBe(initial);
+            });
+        });
+    });
+});
+
+// Form with Records
+import { describe, expect, it } from "vitest";
+import { userFormActions } from "./actions";
+import {
+    setEmailUserFormDispatchSchema,
+    setErrorsUserFormDispatchSchema,
+    setIsSubmittingUserFormDispatchSchema,
+    setIsValidUserFormDispatchSchema,
+    setNameUserFormDispatchSchema,
+    setSubmitCountUserFormDispatchSchema,
+} from "./dispatches";
+import {
+    userFormReducer_setEmail,
+    userFormReducer_setErrors,
+    userFormReducer_setIsSubmitting,
+    userFormReducer_setIsValid,
+    userFormReducer_setName,
+    userFormReducer_setSubmitCount,
+} from "./reducers";
+import { initialUserFormState } from "./state";
+import {
+    invalid_booleans,
+    invalid_numbers,
+    invalid_strings,
+    valid_booleans,
+    valid_numbers,
+    valid_strings,
+} from "../../constants";
+
+describe("userFormReducer", () => {
+    describe(userFormActions.setEmail, () => {
+        it("should allow valid string values", () => {
+            valid_strings.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setEmail,
+                    payload: value,
+                };
+                const state = userFormReducer_setEmail(
+                    initialUserFormState,
+                    dispatch,
+                );
+                expect(state.email).toBe(value);
+            });
+        });
+
+        it("should not allow invalid string values", () => {
+            const initial = initialUserFormState.email;
+            invalid_strings.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setEmail,
+                    payload: value,
+                };
+                const state = userFormReducer_setEmail(
+                    initialUserFormState,
+                    dispatch as any,
+                );
+                expect(state.email).toBe(initial);
+            });
+        });
+    });
+
+    describe(userFormActions.setErrors, () => {
+        it("should allow valid Record values", () => {
+            const validRecords = [{}, { field: "error" }, { a: "1", b: "2" }];
+            validRecords.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setErrors,
+                    payload: value,
+                };
+                const state = userFormReducer_setErrors(
+                    initialUserFormState,
+                    dispatch,
+                );
+                expect(state.errors).toEqual(value);
+            });
+        });
+
+        it("should not allow invalid Record values", () => {
+            const initial = initialUserFormState.errors;
+            const invalidValues = ["not object", 123, null, []];
+            invalidValues.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setErrors,
+                    payload: value,
+                };
+                const state = userFormReducer_setErrors(
+                    initialUserFormState,
+                    dispatch as any,
+                );
+                expect(state.errors).toEqual(initial);
+            });
+        });
+    });
+
+    describe(userFormActions.setSubmitCount, () => {
+        it("should allow valid number values", () => {
+            valid_numbers.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setSubmitCount,
+                    payload: value,
+                };
+                const state = userFormReducer_setSubmitCount(
+                    initialUserFormState,
+                    dispatch,
+                );
+                expect(state.submitCount).toBe(value);
+            });
+        });
+
+        it("should not allow invalid number values", () => {
+            const initial = initialUserFormState.submitCount;
+            invalid_numbers.forEach((value) => {
+                const dispatch = {
+                    action: userFormActions.setSubmitCount,
+                    payload: value,
+                };
+                const state = userFormReducer_setSubmitCount(
+                    initialUserFormState,
+                    dispatch as any,
+                );
+                expect(state.submitCount).toBe(initial);
             });
         });
     });
 });
 ```
 
-## 💡 Pro Tips
+## Advanced Patterns
 
-1. **Running Tests**: Use Vitest watch mode during development:
-   ```bash
-   npm run test:watch
-   ```
+**Nested describe blocks for organization:**
 
-2. **Test Coverage**: Check coverage to ensure all reducers are tested:
-   ```bash
-   npm run test:coverage
-   ```
+```typescript
+describe("dashboardReducer", () => {
+    describe("view management", () => {
+        describe(actions.setCurrentView, () => {/* ... */});
+        describe(actions.setSelectedFilters, () => {/* ... */});
+    });
 
-3. **Test-Driven Development**: Write tests before implementing reducers for
-   better design
+    describe("loading states", () => {
+        describe(actions.setIsLoading, () => {/* ... */});
+        describe(actions.setErrorMessage, () => {/* ... */});
+    });
+});
+```
 
-4. **Descriptive Failures**: Tests should clearly indicate what went wrong when
-   they fail
+**Testing edge cases:**
 
-5. **Group Related Tests**: Use nested `describe` blocks for complex testing
-   scenarios:
-   ```typescript
-   describe("dashboardReducer", () => {
-       describe("view management", () => {
-           describe(action.setCurrentView, () => {/* ... */});
-           describe(action.setSelectedFilters, () => {/* ... */});
-       });
+```typescript
+it("should allow edge case values", () => {
+    const edgeCases = ["", "   ", "a".repeat(1000)]; // Empty, spaces, long
+    edgeCases.forEach((value) => {
+        const dispatch = { action: actions.setUsername, payload: value };
+        const state = reducer_setUsername(initialState, dispatch);
+        expect(state.username).toBe(value);
+    });
+});
+```
 
-       describe("loading states", () => {
-           describe(action.setIsLoading, () => {/* ... */});
-           describe(action.setErrorMessage, () => {/* ... */});
-       });
-   });
-   ```
+**Running tests:**
 
-6. **Snapshot Testing**: For complex objects, consider snapshot testing:
-   ```typescript
-   expect(state).toMatchSnapshot();
-   ```
+```bash
+npm run test          # Run once
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage report
+```

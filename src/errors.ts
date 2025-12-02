@@ -1,6 +1,23 @@
 import { None, type Option, Some } from "ts-results";
 
-abstract class AppErrorBase {
+function getErrorKind(error: unknown): string {
+    if (error instanceof Error) {
+        return error.name;
+    }
+    if (error == null) {
+        return "UnknownError";
+    }
+    return String(error);
+}
+
+function getErrorStack(error: unknown): string {
+    if (error instanceof Error && error.stack) {
+        return error.stack;
+    }
+    return "Stack trace not available";
+}
+
+abstract class SafeErrorBase {
     abstract readonly _tag: string;
     public readonly name: string;
     public readonly message: string;
@@ -26,7 +43,7 @@ abstract class AppErrorBase {
     }
 }
 
-class AuthError extends AppErrorBase {
+class AuthError extends SafeErrorBase {
     readonly _tag = "AuthError";
 
     constructor(
@@ -35,31 +52,27 @@ class AuthError extends AppErrorBase {
     ) {
         super(
             "AuthError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class ValidationError extends AppErrorBase {
+class ValidationError extends SafeErrorBase {
     readonly _tag = "ValidationError";
 
     constructor(error?: unknown, message = "Validation error occurred") {
         super(
             "ValidationError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class DatabaseError extends AppErrorBase {
+class DatabaseError extends SafeErrorBase {
     readonly _tag = "DatabaseError";
 
     constructor(
@@ -69,32 +82,28 @@ class DatabaseError extends AppErrorBase {
     ) {
         super(
             "DatabaseError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
             Some(status),
         );
     }
 }
 
-class NotFoundError extends AppErrorBase {
+class NotFoundError extends SafeErrorBase {
     readonly _tag = "NotFoundError";
 
     constructor(error?: unknown, message = "Resource not found") {
         super(
             "NotFoundError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class NetworkError extends AppErrorBase {
+class NetworkError extends SafeErrorBase {
     readonly _tag = "NetworkError";
 
     constructor(
@@ -104,47 +113,41 @@ class NetworkError extends AppErrorBase {
     ) {
         super(
             "NetworkError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
             Some(status),
         );
     }
 }
 
-class TokenCreationError extends AppErrorBase {
+class TokenCreationError extends SafeErrorBase {
     readonly _tag = "TokenCreationError";
 
     constructor(error?: unknown, message = "Token creation error occurred") {
         super(
             "TokenCreationError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class TokenDecodeError extends AppErrorBase {
+class TokenDecodeError extends SafeErrorBase {
     readonly _tag = "TokenDecodeError";
 
     constructor(error?: unknown, message = "Token decoding error occurred") {
         super(
             "TokenDecodeError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class TokenVerificationError extends AppErrorBase {
+class TokenVerificationError extends SafeErrorBase {
     readonly _tag = "TokenVerificationError";
 
     constructor(
@@ -153,16 +156,14 @@ class TokenVerificationError extends AppErrorBase {
     ) {
         super(
             "TokenVerificationError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class TokenSignatureError extends AppErrorBase {
+class TokenSignatureError extends SafeErrorBase {
     readonly _tag = "TokenSignatureError";
 
     constructor(
@@ -171,181 +172,157 @@ class TokenSignatureError extends AppErrorBase {
     ) {
         super(
             "TokenSignatureError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class TimeoutError extends AppErrorBase {
+class TimeoutError extends SafeErrorBase {
     readonly _tag = "TimeoutError";
 
     constructor(error?: unknown, message = "Operation timed out") {
         super(
             "TimeoutError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class PromiseRejectionError extends AppErrorBase {
+class PromiseRejectionError extends SafeErrorBase {
     readonly _tag = "PromiseRejectionError";
 
     constructor(error?: unknown, message = "Unhandled promise rejection") {
         super(
             "PromiseRejectionError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class PromiseAbortedError extends AppErrorBase {
+class PromiseAbortedError extends SafeErrorBase {
     readonly _tag = "PromiseAbortedError";
 
     constructor(error?: unknown, message = "Promise was aborted") {
         super(
             "PromiseAbortedError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class RetryLimitExceededError extends AppErrorBase {
+class RetryLimitExceededError extends SafeErrorBase {
     readonly _tag = "RetryLimitExceededError";
 
     constructor(error?: unknown, message = "Retry limit exceeded") {
         super(
             "RetryLimitExceededError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class HashComparisonError extends AppErrorBase {
+class HashComparisonError extends SafeErrorBase {
     readonly _tag = "HashComparisonError";
 
     constructor(error?: unknown, message = "Hash comparison error occurred") {
         super(
             "HashComparisonError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class HashGenerationError extends AppErrorBase {
+class HashGenerationError extends SafeErrorBase {
     readonly _tag = "HashGenerationError";
 
     constructor(error?: unknown, message = "Hash generation error occurred") {
         super(
             "HashGenerationError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class AbortError extends AppErrorBase {
+class AbortError extends SafeErrorBase {
     readonly _tag = "AbortError";
 
     constructor(error?: unknown, message = "Operation was aborted") {
         super(
             "AbortError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class CacheError extends AppErrorBase {
+class CacheError extends SafeErrorBase {
     readonly _tag = "CacheError";
 
     constructor(error?: unknown, message = "Cache error occurred") {
         super(
             "CacheError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class JSONError extends AppErrorBase {
+class JSONError extends SafeErrorBase {
     readonly _tag = "JSONError";
 
     constructor(error?: unknown, message = "JSON error occurred") {
         super(
             "JSONError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class ParseError extends AppErrorBase {
+class ParseError extends SafeErrorBase {
     readonly _tag = "ParseError";
 
     constructor(error?: unknown, message = "Parse error occurred") {
         super(
             "ParseError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class InvariantError extends AppErrorBase {
+class InvariantError extends SafeErrorBase {
     readonly _tag = "InvariantError";
 
     constructor(error?: unknown, message = "Invariant error occurred") {
         super(
             "InvariantError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class HTTPError extends AppErrorBase {
+class HTTPError extends SafeErrorBase {
     readonly _tag = "HTTPError";
 
     constructor(
@@ -354,61 +331,53 @@ class HTTPError extends AppErrorBase {
     ) {
         super(
             "HTTPError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class UnknownError extends AppErrorBase {
+class UnknownError extends SafeErrorBase {
     readonly _tag = "UnknownError";
 
     constructor(error?: unknown, message = "An unknown error occurred") {
         super(
             "UnknownError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class WorkerError extends AppErrorBase {
+class WorkerError extends SafeErrorBase {
     readonly _tag = "WorkerError";
 
     constructor(error?: unknown, message = "Worker error occurred") {
         super(
             "WorkerError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class WorkerMessageError extends AppErrorBase {
+class WorkerMessageError extends SafeErrorBase {
     readonly _tag = "WorkerMessageError";
 
     constructor(error?: unknown, message = "Worker message error occurred") {
         super(
             "WorkerMessageError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
 }
 
-class WorkerMessageHandlerError extends AppErrorBase {
+class WorkerMessageHandlerError extends SafeErrorBase {
     readonly _tag = "WorkerMessageHandlerError";
 
     constructor(
@@ -417,10 +386,8 @@ class WorkerMessageHandlerError extends AppErrorBase {
     ) {
         super(
             "WorkerMessageHandlerError",
-            error instanceof Error ? error.name : "UnknownError",
-            error instanceof Error && error.stack
-                ? error.stack
-                : "Stack trace not available",
+            getErrorKind(error),
+            getErrorStack(error),
             message,
         );
     }
@@ -428,7 +395,6 @@ class WorkerMessageHandlerError extends AppErrorBase {
 
 export {
     AbortError,
-    AppErrorBase,
     AuthError,
     CacheError,
     DatabaseError,
@@ -443,6 +409,7 @@ export {
     PromiseAbortedError,
     PromiseRejectionError,
     RetryLimitExceededError,
+    SafeErrorBase,
     TimeoutError,
     TokenCreationError,
     TokenDecodeError,

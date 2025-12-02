@@ -14,20 +14,18 @@ type Prettify<T> =
     & {};
 
 type SafeSuccess<Data = unknown> = Option<Data>;
-
+type SafeError = {
+    name: string;
+    errorKind: string;
+    stack: string;
+    message: string;
+    status: Option<number>;
+    timestamp: string;
+};
 type SafeResult<Data = unknown> = Result<
     SafeSuccess<Data>,
     SafeError
 >;
-
-type SafeError = {
-    name: string;
-    message: string;
-    original: Option<string>;
-    stack: Option<string>;
-    status: Option<number>;
-    timestamp: string;
-};
 
 type ValidationRegexes = Array<[RegExp, string]>;
 

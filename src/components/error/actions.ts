@@ -8,6 +8,7 @@ type ErrorActions = {
 
 const errorActions: ErrorActions = {
     setChildComponentState: "setChildComponentState",
+    setLoggerWorkerMaybe: "setLoggerWorkerMaybe",
 };
 
 export { errorActions };

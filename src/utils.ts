@@ -16,16 +16,16 @@ import z, {
 } from "zod";
 import type { $strip } from "zod/v4/core";
 import {
-    AppErrorBase,
     CacheError,
     JSONError,
     NetworkError,
     NotFoundError,
     ParseError,
     PromiseAbortedError,
+    SafeErrorBase,
     WorkerMessageError,
 } from "./errors";
-import type { SafeError, SafeResult } from "./types";
+import type { SafeResult } from "./types";
 
 function createSafeSuccessResult<Data = unknown>(
     data: Data,
@@ -34,80 +34,81 @@ function createSafeSuccessResult<Data = unknown>(
 }
 
 function createSafeErrorResult(
-    error: unknown,
-): Err<SafeError> {
-    if (error instanceof Error) {
-        return new Err({
-            message: error.message == null ? "Unknown error" : error.message,
-            name: error.name == null ? "Error" : error.name,
-            original: Some(error.toString()),
-            stack: error.stack == null ? None : Some(error.stack),
-            status: None,
-            timestamp: new Date().toISOString(),
-        });
-    }
+    safeErrorBase: SafeErrorBase,
+): Err<SafeErrorBase> {
+    return new Err(safeErrorBase);
+    // if (error instanceof Error) {
+    //     return new Err({
+    //         message: error.message == null ? "Unknown error" : error.message,
+    //         name: error.name == null ? "Error" : error.name,
+    //         original: Some(error.toString()),
+    //         stack: error.stack == null ? None : Some(error.stack),
+    //         status: None,
+    //         timestamp: new Date().toISOString(),
+    //     });
+    // }
 
-    if (typeof error === "string") {
-        return new Err({
-            message: error,
-            name: "Error",
-            original: Some(error),
-            stack: None,
-            status: None,
-            timestamp: new Date().toISOString(),
-        });
-    }
+    // if (typeof error === "string") {
+    //     return new Err({
+    //         message: error,
+    //         name: "Error",
+    //         original: Some(error),
+    //         stack: None,
+    //         status: None,
+    //         timestamp: new Date().toISOString(),
+    //     });
+    // }
 
-    function serializeSafe(data: unknown): Option<string> {
-        try {
-            const serializedData = JSON.stringify(data, null, 2);
-            return Some(serializedData);
-        } catch (_error: unknown) {
-            return Some("Unserializable data");
-        }
-    }
+    // function serializeSafe(data: unknown): Option<string> {
+    //     try {
+    //         const serializedData = JSON.stringify(data, null, 2);
+    //         return Some(serializedData);
+    //     } catch (_error: unknown) {
+    //         return Some("Unserializable data");
+    //     }
+    // }
 
-    if (error instanceof Event) {
-        if (error instanceof PromiseRejectionEvent) {
-            return new Err({
-                message: error.reason.toString() ?? "",
-                name: `PromiseRejectionEvent: ${error.type}`,
-                original: serializeSafe(error),
-                stack: None,
-                status: None,
-                timestamp: new Date().toISOString(),
-            });
-        }
+    // if (error instanceof Event) {
+    //     if (error instanceof PromiseRejectionEvent) {
+    //         return new Err({
+    //             message: error.reason.toString() ?? "",
+    //             name: `PromiseRejectionEvent: ${error.type}`,
+    //             original: serializeSafe(error),
+    //             stack: None,
+    //             status: None,
+    //             timestamp: new Date().toISOString(),
+    //         });
+    //     }
 
-        return new Err({
-            message: error.timeStamp.toString() ?? "",
-            name: `EventError: ${error.type}`,
-            original: serializeSafe(error),
-            stack: None,
-            status: None,
-            timestamp: new Date().toISOString(),
-        });
-    }
+    //     return new Err({
+    //         message: error.timeStamp.toString() ?? "",
+    //         name: `EventError: ${error.type}`,
+    //         original: serializeSafe(error),
+    //         stack: None,
+    //         status: None,
+    //         timestamp: new Date().toISOString(),
+    //     });
+    // }
 
-    if (error instanceof AppErrorBase) {
-        return new Err({
-            message: error.message,
-            name: error.name,
-            original: None,
-            stack: error.stack ? Some(error.stack) : None,
-            status: error.status,
-            timestamp: error.timestamp,
-        });
-    }
+    // if (error instanceof SafeErrorBase) {
+    //     return new Err({
+    //         message: error.message,
+    //         name: error.name,
+    //         original: None,
+    //         stack: error.stack ? Some(error.stack) : None,
+    //         status: error.status,
+    //         timestamp: error.timestamp,
+    //     });
+    // }
 
-    return new Err({
-        message: "You've seen it before.🪞 Déjà vu. Something's off...",
-        name: "👾 SimulationDysfunction",
-        original: serializeSafe(error),
-        stack: None,
-        status: None,
-        timestamp: new Date().toISOString(),
-    });
+    // return new Err({
+    //     message: "You've seen it before.🪞 Déjà vu. Something's off...",
+    //     name: "👾 SimulationDysfunction",
+    //     original: serializeSafe(error),
+    //     stack: None,
+    //     status: None,
+    //     timestamp: new Date().toISOString(),
+    // });
 }
 
 function parseSyncSafe<Output = unknown>(

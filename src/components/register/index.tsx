@@ -1,5 +1,6 @@
 import { useEffect, useReducer } from "react";
 import { Some } from "ts-results";
+import { HTTPError } from "../../errors";
 import { useMountedRef } from "../../hooks/useMountedRef";
 import { createSafeErrorResult, sendMessageToWorker } from "../../utils";
 import type {
@@ -138,7 +139,7 @@ function Register(
 
     useEffect(() => {
         // simulate random error for testing ErrorBoundary HOC
-        const isError = Math.random() < 0.15;
+        const isError = Math.random() < 0.5;
         if (!isError || !username) {
             return;
         }
@@ -147,7 +148,10 @@ function Register(
             action: registerActions.setSafeErrorMaybe,
             payload: Some(
                 createSafeErrorResult(
-                    new Error("Random simulated error in Register component."),
+                    new HTTPError(
+                        new Error(),
+                        "Simulated random error occurred.",
+                    ),
                 ),
             ),
         });

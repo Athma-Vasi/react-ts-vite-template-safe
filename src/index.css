@@ -264,6 +264,15 @@ input:focus {
   margin: var(--spacing-lg) 0;
   width: clamp(300px, 90%, 600px);
   box-shadow: var(--shadow-md);
+
+  h2 {
+    margin-bottom: var(--spacing-md);
+  }
+
+  pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
 }
 
 .register-component {

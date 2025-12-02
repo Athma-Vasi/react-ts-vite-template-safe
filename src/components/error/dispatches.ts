@@ -1,4 +1,5 @@
 import z from "zod";
+import { createOptionSchema } from "../../schemas";
 import { errorActions } from "./actions";
 
 const setChildComponentStateErrorDispatchSchema = z.object({
@@ -6,7 +7,17 @@ const setChildComponentStateErrorDispatchSchema = z.object({
     payload: z.record(z.string(), z.unknown()),
 });
 
-type ErrorDispatch = z.infer<typeof setChildComponentStateErrorDispatchSchema>;
+const setLoggerWorkerMaybeErrorDispatchSchema = z.object({
+    action: z.literal(errorActions.setLoggerWorkerMaybe),
+    payload: createOptionSchema(z.instanceof(Worker)),
+});
 
-export { setChildComponentStateErrorDispatchSchema };
+type ErrorDispatch =
+    | z.infer<typeof setChildComponentStateErrorDispatchSchema>
+    | z.infer<typeof setLoggerWorkerMaybeErrorDispatchSchema>;
+
+export {
+    setChildComponentStateErrorDispatchSchema,
+    setLoggerWorkerMaybeErrorDispatchSchema,
+};
 export type { ErrorDispatch };

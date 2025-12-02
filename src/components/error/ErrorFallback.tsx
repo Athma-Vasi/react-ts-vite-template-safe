@@ -1,46 +1,56 @@
+import { useEffect } from "react";
 import type { Err } from "ts-results";
-import type { SafeError } from "../../types";
+import { type SafeErrorBase } from "../../errors";
+
+type ErrorFallbackProps = {
+    error: Err<SafeErrorBase>;
+    resetErrorBoundary: () => void;
+};
 
 function ErrorFallback({
     error,
     resetErrorBoundary,
-}: {
-    error: Err<SafeError>;
-    resetErrorBoundary: () => void;
-}) {
+}: ErrorFallbackProps) {
+    // Automatically reset the error boundary when this component is mounted
+    useEffect(() => {
+        resetErrorBoundary();
+    }, []);
+
     console.log("ErrorFallback rendered with error:", error);
 
-    return (
-        <div
-            className="error-fallback"
-            role="alert"
-            style={{
-                padding: "1rem",
-                border: "1px solid red",
-                borderRadius: "4px",
-                // backgroundColor: "#ffe6e6",
-            }}
-        >
-            <h2 style={{ color: "red" }}>Something went wrong:</h2>
-            <pre
-                style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
-            >{error.err ? error.val.stack : "error is ok"}</pre>
-            <button
-                onClick={resetErrorBoundary}
-                style={{
-                    marginTop: "1rem",
-                    padding: "0.5rem 1rem",
-                    backgroundColor: "red",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                }}
-            >
-                Try again
-            </button>
-        </div>
-    );
+    return null;
+
+    // if (error.ok) {
+    //     return (
+    //         <div className="error-fallback" role="alert">
+    //             <h2>Unexpected Error Format</h2>
+    //             <pre>{JSON.stringify(error.val, null, 2)}</pre>
+    //             <button onClick={resetErrorBoundary}>
+    //                 Try again
+    //             </button>
+    //         </div>
+    //     );
+    // }
+
+    // const safeError = error.val;
+    // const { message, errorKind, name, stack, status, timestamp } = safeError;
+
+    // return (
+    //     <div
+    //         className="error-fallback"
+    //         role="alert"
+    //     >
+    //         <h2>{`Name: ${name}`}</h2>
+    //         <h3>{`Error Kind: ${errorKind}`}</h3>
+    //         <pre>{`Message: ${message}`}</pre>
+    //         <pre>{`Status: ${status.none?"Unavailable": status.val}`}</pre>
+    //         <pre>{`Timestamp: ${timestamp}`}</pre>
+    //         <pre>{`Stack Trace: ${stack}`}</pre>
+    //         <button onClick={resetErrorBoundary}>
+    //             Try again
+    //         </button>
+    //     </div>
+    // );
 }
 
 export default ErrorFallback;
