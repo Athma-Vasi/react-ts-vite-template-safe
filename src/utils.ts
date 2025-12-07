@@ -370,7 +370,26 @@ function sendMessageToWorker<
     }
 }
 
+function capitalizeString(str: string): string {
+    const parsedResult = parseSyncSafe({
+        object: str,
+        schema: z.string().min(1),
+    });
+
+    if (parsedResult.err) {
+        return str;
+    }
+    const parsedMaybe = parsedResult.safeUnwrap();
+    if (parsedMaybe.none) {
+        return str;
+    }
+    const parsedStr = parsedMaybe.safeUnwrap();
+
+    return `${parsedStr.charAt(0).toUpperCase()}${parsedStr.slice(1)}`;
+}
+
 export {
+    capitalizeString,
     createAppErrorResult,
     createSafeSuccessResult,
     getCachedItemAbortableSafe,
