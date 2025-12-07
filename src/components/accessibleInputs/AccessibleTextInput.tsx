@@ -30,7 +30,7 @@ type AccessibleTextInputProps<
         name: string;
         setLastActiveInputAction: SetLastActiveInputAction;
         setValueAction: SetValueAction;
-        validationRegexes?: Array<[RegExp, string]>;
+        validationRegexes?: ValidationRegexes;
         value: Payload;
     };
 
@@ -79,7 +79,7 @@ function AccessibleTextInput<
         ([regex, _message]) => regex.test(value),
     );
     const { screenreaderTextElement, describedByIds } =
-        createValidationScreenreaderElement({
+        createAccessibleTextInputValidation({
             isInputFocused,
             isValueValid,
             name,
@@ -145,7 +145,7 @@ function AccessibleTextInput<
     );
 
     return (
-        <div className="accessible-input">
+        <div className="accessible-text-input">
             {hideLabel ? null : labelElement}
             {textInputElement}
             {disableValidationScreenreaderText ? null : screenreaderTextElement}
@@ -153,7 +153,7 @@ function AccessibleTextInput<
     );
 }
 
-function createValidationScreenreaderElement(
+function createAccessibleTextInputValidation(
     { isInputFocused, isValueValid, name, validationRegexes, value }: {
         isInputFocused: boolean;
         isValueValid: boolean;

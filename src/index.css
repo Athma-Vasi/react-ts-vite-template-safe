@@ -249,7 +249,7 @@ input.input--valid-state, textarea.input--valid-state {
   box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
-.accessible-input {
+.accessible-text-input {
   display: flex;
   flex-direction: column;
   gap: var(--gap);
