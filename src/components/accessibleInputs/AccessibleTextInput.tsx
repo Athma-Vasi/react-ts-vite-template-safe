@@ -55,14 +55,14 @@ function AccessibleTextInput<
     >,
 ) {
     const {
+        name,
+        dataTestId = `accessible-text-input-${name}`,
         dispatch,
         disableValidationScreenreaderText,
         errorAction,
         errorDispatch,
-        name,
-        dataTestId = `accessible-text-input-${name}`,
         hideLabel = false,
-        label = name,
+        label = `${name.charAt(0).toUpperCase()}${name.slice(1)}`,
         onBlur = () => {},
         onChange = () => {},
         onFocus = () => {},
@@ -78,19 +78,27 @@ function AccessibleTextInput<
     const isValueValid = value.length === 0 || validationRegexes.every(
         ([regex, _message]) => regex.test(value),
     );
-    const { screenreaderTextElement, describedByIds } =
+
+    const invalidValueElementId = `${label}-text-input__validation--invalid`;
+    const validValueElementId = `${label}-text-input__validation--valid`;
+    const emptyValueElementId = `${label}-text-input__validation--empty`;
+
+    const { screenreaderTextElement, describedById } =
         createAccessibleTextInputValidation({
+            emptyValueElementId,
+            invalidValueElementId,
             isInputFocused,
             isValueValid,
-            name,
+            label,
+            validValueElementId,
             validationRegexes,
             value,
         });
 
     const labelElement = (
         <label
-            htmlFor={dataTestId}
             className={hideLabel ? "visually-hidden" : ""}
+            htmlFor={name}
         >
             {label}
         </label>
@@ -98,9 +106,10 @@ function AccessibleTextInput<
 
     const textInputElement = (
         <input
-            aria-describedby={describedByIds}
-            aria-errormessage={`${name}-invalid-text`}
+            aria-describedby={describedById}
+            aria-errormessage={invalidValueElementId}
             aria-invalid={!isValueValid}
+            aria-label={label}
             className={!isValueValid
                 ? "input--error-state"
                 : value.length === 0
@@ -146,7 +155,7 @@ function AccessibleTextInput<
 
     return (
         <div className="accessible-text-input">
-            {hideLabel ? null : labelElement}
+            {labelElement}
             {textInputElement}
             {disableValidationScreenreaderText ? null : screenreaderTextElement}
         </div>
@@ -154,20 +163,30 @@ function AccessibleTextInput<
 }
 
 function createAccessibleTextInputValidation(
-    { isInputFocused, isValueValid, name, validationRegexes, value }: {
+    {
+        emptyValueElementId,
+        invalidValueElementId,
+        isInputFocused,
+        isValueValid,
+        label,
+        validValueElementId,
+        validationRegexes,
+        value,
+    }: {
+        emptyValueElementId: string;
+        invalidValueElementId: string;
         isInputFocused: boolean;
         isValueValid: boolean;
-        name: string;
+        label: string;
+        validValueElementId: string;
         validationRegexes: ValidationRegexes;
         value: string;
     },
 ): {
-    describedByIds: string;
+    describedById: string;
     screenreaderTextElement: JSX.Element;
 } {
-    const capitalizedName = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
-
-    const shouldShowInvalidValueElement = isInputFocused && !isValueValid;
+    const showInvalidValueElement = isInputFocused && !isValueValid;
     const invalidValueText = validationRegexes.reduce(
         (acc, [regex, message]) => {
             const isValid = regex.test(value);
@@ -177,13 +196,12 @@ function createAccessibleTextInputValidation(
 
             return acc;
         },
-        `${capitalizedName} is invalid. `,
+        `${label} is invalid. `,
     ).trim();
-    const invalidValueElementId = `${name}-text-input__validation--invalid`;
     const invalidValueElement = (
         <p
             aria-live="polite"
-            className={shouldShowInvalidValueElement
+            className={showInvalidValueElement
                 ? "text-input__validation"
                 : "visually-hidden"}
             id={invalidValueElementId}
@@ -193,13 +211,12 @@ function createAccessibleTextInputValidation(
         </p>
     );
 
-    const shouldShowValidValueElement = isInputFocused && isValueValid;
-    const validValueText = `${capitalizedName} is valid!`;
-    const validValueElementId = `${name}-text-input__validation--valid`;
+    const showValidValueElement = isInputFocused && isValueValid;
+    const validValueText = `${label} is valid!`;
     const validValueElement = (
         <p
             aria-live="polite"
-            className={shouldShowValidValueElement
+            className={showValidValueElement
                 ? "text-input__validation"
                 : "visually-hidden"}
             id={validValueElementId}
@@ -209,9 +226,8 @@ function createAccessibleTextInputValidation(
         </p>
     );
 
-    const shouldShowEmptyValueElement = isInputFocused && value.length === 0;
-    const emptyValueText = `${capitalizedName} is empty.`;
-    const emptyValueElementId = `${name}-text-input__validation--empty`;
+    const showEmptyValueElement = isInputFocused && value.length === 0;
+    const emptyValueText = `${label} is empty.`;
     const emptyValueElement = (
         <p
             aria-live="polite"
@@ -224,11 +240,14 @@ function createAccessibleTextInputValidation(
     );
 
     return {
-        describedByIds:
-            `${invalidValueElementId} ${validValueElementId} ${emptyValueElementId}`,
-        screenreaderTextElement: shouldShowInvalidValueElement
+        describedById: showInvalidValueElement
+            ? invalidValueElementId
+            : showEmptyValueElement
+            ? emptyValueElementId
+            : validValueElementId,
+        screenreaderTextElement: showInvalidValueElement
             ? invalidValueElement
-            : shouldShowEmptyValueElement
+            : showEmptyValueElement
             ? emptyValueElement
             : validValueElement,
     };
