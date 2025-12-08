@@ -112,10 +112,10 @@ function AccessibleTextInput<
             aria-invalid={!isValueValid}
             aria-label={label}
             className={!isValueValid
-                ? "input--error-state"
+                ? invalidValueElementId
                 : value.length === 0
-                ? "input--empty-state"
-                : "input--valid-state"}
+                ? emptyValueElementId
+                : validValueElementId}
             data-testid={dataTestId}
             name={name}
             onBlur={(event: React.FocusEvent<HTMLInputElement, Element>) => {
@@ -205,7 +205,7 @@ function createAccessibleTextInputValidation(
         <p
             aria-live="polite"
             className={showInvalidValueElement
-                ? "text-input__validation"
+                ? invalidValueElementId
                 : "visually-hidden"}
             id={invalidValueElementId}
             style={{ color: "red", paddingTop: "0.25rem" }}
@@ -220,7 +220,7 @@ function createAccessibleTextInputValidation(
         <p
             aria-live="polite"
             className={showValidValueElement
-                ? "text-input__validation"
+                ? validValueElementId
                 : "visually-hidden"}
             id={validValueElementId}
             style={{ color: "green", paddingTop: "0.25rem" }}
@@ -234,7 +234,9 @@ function createAccessibleTextInputValidation(
     const emptyValueElement = (
         <p
             aria-live="polite"
-            className="visually-hidden"
+            className={showEmptyValueElement
+                ? emptyValueElementId
+                : "visually-hidden"}
             id={emptyValueElementId}
             style={{ color: "gray", paddingTop: "0.25rem" }}
         >

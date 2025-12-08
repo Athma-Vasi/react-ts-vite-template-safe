@@ -1,7 +1,7 @@
-import Register from "./components/register";
+import { RegisterSuspenseBoundary } from "./components/register";
 
 function App() {
-  return <Register />;
+  return <RegisterSuspenseBoundary />;
 }
 
 export default App;
