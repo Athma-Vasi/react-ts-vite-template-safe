@@ -56,7 +56,6 @@ function Register(
         cacheWorkerMaybe,
         fetchWorkerMaybe,
         isLoading,
-        lastActiveInput,
         password,
         responseDataMaybe,
         safeErrorMaybe,
@@ -179,13 +178,7 @@ function Register(
     }, [password]);
 
     const usernameInputRef = useRef<HTMLInputElement | null>(null);
-    const passwordInputRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
-        if (lastActiveInput === "password") {
-            passwordInputRef.current?.focus?.();
-            return;
-        }
-
         usernameInputRef.current?.focus?.();
     }, []);
 
@@ -224,7 +217,6 @@ function Register(
                 });
             }}
             ref={usernameInputRef}
-            setLastActiveInputAction={registerActions.setLastActiveInput}
             setValueAction={registerActions.setUsername}
             type="text"
             validationRegexes={username_validation_regexes}
@@ -252,8 +244,6 @@ function Register(
                     workerMaybe: cacheWorkerMaybe,
                 });
             }}
-            ref={passwordInputRef}
-            setLastActiveInputAction={registerActions.setLastActiveInput}
             setValueAction={registerActions.setPassword}
             type="password"
             validationRegexes={password_validation_regexes}
@@ -264,6 +254,7 @@ function Register(
     const submitButtonElement = (
         <AccessibleButtonInput
             disabled={isLoading}
+            dispatch={registerDispatch}
             isLoading={isLoading}
             kind="submit"
             name="submit"

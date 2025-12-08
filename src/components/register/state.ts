@@ -9,8 +9,6 @@ type RegisterState = {
     // handles all storage operations
     forageWorkerMaybe: Option<Worker>;
     isLoading: boolean;
-    // input names that allow focus management after seamless errorHOC recovery
-    lastActiveInput: "username" | "password";
     password: string;
     responseDataMaybe: Option<Array<ResponseData>>;
     safeErrorMaybe: Option<Err<AppError>>;
@@ -22,7 +20,6 @@ const initialRegisterState: RegisterState = {
     fetchWorkerMaybe: None,
     forageWorkerMaybe: None,
     isLoading: false,
-    lastActiveInput: "username",
     password: "",
     responseDataMaybe: None,
     safeErrorMaybe: None,

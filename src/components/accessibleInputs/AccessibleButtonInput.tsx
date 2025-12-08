@@ -111,7 +111,7 @@ type AccessibleButtonInputProps<
     & {
         dataTestId?: string;
         disabledScreenreaderText?: string;
-        dispatch?: React.ActionDispatch<[dispatch: Dispatch]>;
+        dispatch: React.ActionDispatch<[dispatch: Dispatch]>;
         enabledScreenreaderText?: string;
         isIconAsLabel?: boolean;
         isLoading?: boolean;

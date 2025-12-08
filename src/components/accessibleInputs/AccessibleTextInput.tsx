@@ -5,10 +5,8 @@ import { capitalizeString } from "../../utils";
 type AccessibleTextInputProps<
     SetValueAction extends string = string,
     Payload extends string = string,
-    SetLastActiveInputAction extends string = string,
-    Name extends string = string,
     Dispatch = {
-        action: SetValueAction | SetLastActiveInputAction;
+        action: SetValueAction;
         payload: Payload;
     },
     ErrorAction extends string = string,
@@ -24,12 +22,11 @@ type AccessibleTextInputProps<
         errorAction: ErrorAction;
         errorDispatch: React.ActionDispatch<[dispatch: {
             action: ErrorAction;
-            payload: Record<string, Payload | Name>;
+            payload: Record<string, Payload>;
         }]>;
         hideLabel?: boolean;
         label?: string;
         name: string;
-        setLastActiveInputAction: SetLastActiveInputAction;
         setValueAction: SetValueAction;
         validationRegexes?: ValidationRegexes;
         value: Payload;
@@ -38,19 +35,15 @@ type AccessibleTextInputProps<
 function AccessibleTextInput<
     SetValueAction extends string = string,
     Payload extends string = string,
-    SetLastActiveInputAction extends string = string,
-    Name extends string = string,
     Dispatch = {
-        action: SetValueAction | SetLastActiveInputAction;
-        payload: Payload | Name;
+        action: SetValueAction;
+        payload: Payload;
     },
     ErrorAction extends string = string,
 >(
     props: AccessibleTextInputProps<
         SetValueAction,
         Payload,
-        SetLastActiveInputAction,
-        Name,
         Dispatch,
         ErrorAction
     >,
@@ -67,7 +60,6 @@ function AccessibleTextInput<
         onBlur = () => {},
         onChange = () => {},
         onFocus = () => {},
-        setLastActiveInputAction,
         setValueAction,
         validationRegexes = [],
         value = "",
@@ -125,16 +117,12 @@ function AccessibleTextInput<
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const { currentTarget: { value } } = event;
 
-                dispatch({
+                dispatch?.({
                     action: setValueAction,
                     payload: value as Payload,
                 } as Dispatch);
-                dispatch({
-                    action: setLastActiveInputAction,
-                    payload: name as Name,
-                } as Dispatch);
 
-                errorDispatch({
+                errorDispatch?.({
                     action: errorAction,
                     payload: {
                         [name]: value as Payload,
