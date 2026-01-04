@@ -29,12 +29,12 @@ self.onmessage = async (
         return;
     }
 
-    try {
-        const { abort, signal } = new AbortController();
-        const timeout = setTimeout(() => {
-            abort();
-        }, fetch_timeout_ms);
+    const { abort, signal } = new AbortController();
+    const timeout = setTimeout(() => {
+        abort();
+    }, fetch_timeout_ms);
 
+    try {
         // const { url, requestInit } = event.data;
         // const responseResult = await retryFetchSafe({
         //     input: url,

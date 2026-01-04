@@ -4,17 +4,17 @@ import { createOptionSchema } from "../../schemas";
 import { registerActions } from "./actions";
 
 const setForageWorkerMaybeRegisterDispatchSchema = z.object({
-    action: z.literal("setForageWorkerMaybe"),
+    action: z.literal(registerActions.setForageWorkerMaybe),
     payload: createOptionSchema(z.instanceof(Worker)),
 });
 
 const setCacheWorkerMaybeRegisterDispatchSchema = z.object({
-    action: z.literal("setCacheWorkerMaybe"),
+    action: z.literal(registerActions.setCacheWorkerMaybe),
     payload: createOptionSchema(z.instanceof(Worker)),
 });
 
 const setFetchWorkerMaybeRegisterDispatchSchema = z.object({
-    action: z.literal("setFetchWorkerMaybe"),
+    action: z.literal(registerActions.setFetchWorkerMaybe),
     payload: createOptionSchema(z.instanceof(Worker)),
 });
 
@@ -40,7 +40,7 @@ const setResponseDataMaybeRegisterDispatchSchema = z.object({
 });
 
 const setSafeErrorMaybeRegisterDispatchSchema = z.object({
-    action: z.literal("setSafeErrorMaybe"),
+    action: z.literal(registerActions.setSafeErrorMaybe),
     payload: createOptionSchema(z.instanceof(Err)),
 });
 

@@ -377,6 +377,60 @@ class WorkerMessageError extends AppErrorBase {
     }
 }
 
+class WebSocketError extends AppErrorBase {
+    readonly _tag = "WebSocketError";
+
+    constructor(error?: unknown, message = "WebSocket error occurred") {
+        super(
+            "WebSocketError",
+            getErrorKind(error),
+            getErrorStack(error),
+            message,
+        );
+    }
+}
+
+class WebSocketMessageError extends AppErrorBase {
+    readonly _tag = "WebSocketMessageError";
+    constructor(error?: unknown, message = "WebSocket message error occurred") {
+        super(
+            "WebSocketMessageError",
+            getErrorKind(error),
+            getErrorStack(error),
+            message,
+        );
+    }
+}
+
+class WebSocketWorkerError extends AppErrorBase {
+    readonly _tag = "WebSocketWorkerError";
+
+    constructor(error?: unknown, message = "WebSocketWorker error occurred") {
+        super(
+            "WebSocketWorkerError",
+            getErrorKind(error),
+            getErrorStack(error),
+            message,
+        );
+    }
+}
+
+class WebSocketWorkerMessageError extends AppErrorBase {
+    readonly _tag = "WebSocketWorkerMessageError";
+
+    constructor(
+        error?: unknown,
+        message = "WebSocketWorker message error occurred",
+    ) {
+        super(
+            "WebSocketWorkerMessageError",
+            getErrorKind(error),
+            getErrorStack(error),
+            message,
+        );
+    }
+}
+
 class WorkerMessageHandlerError extends AppErrorBase {
     readonly _tag = "WorkerMessageHandlerError";
 
@@ -417,6 +471,10 @@ export {
     TokenVerificationError,
     UnknownError,
     ValidationError,
+    WebSocketError,
+    WebSocketMessageError,
+    WebSocketWorkerError,
+    WebSocketWorkerMessageError,
     WorkerError,
     WorkerMessageError,
     WorkerMessageHandlerError,

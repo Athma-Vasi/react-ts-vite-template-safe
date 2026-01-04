@@ -1,4 +1,5 @@
 import type { Option, Result } from "ts-results";
+import type { AppErrorBase } from "./errors";
 
 type NonNullableObject<T> = {
     [K in keyof T as T[K] extends null | undefined ? never : K]: T[K] extends
@@ -24,7 +25,7 @@ type AppError = {
 };
 type AppResult<Data = unknown> = Result<
     SafeSuccess<Data>,
-    AppError
+    AppErrorBase
 >;
 
 type ValidationRegexes = Array<[RegExp, string]>;
