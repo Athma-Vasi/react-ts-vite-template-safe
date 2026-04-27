@@ -29,74 +29,99 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
 
 // block scope for persistent worker state
 {
-    const cache = new Map<string, unknown>();
+    type CacheWorkerState = {
+        cache: Map<string, unknown>;
+        queue: MessageEventMainToCacheWorker[];
+        isProcessing: boolean;
+    };
+
+    const state: CacheWorkerState = {
+        cache: new Map(),
+        queue: [],
+        isProcessing: false,
+    };
 
     self.onmessage = async (
         event: MessageEventMainToCacheWorker,
     ) => {
-        if (!event.data) {
-            self.postMessage(
-                createAppErrorResult(
-                    new WorkerMessageError(
-                        "No data received in cache worker message",
-                    ),
-                ),
-            );
-            return;
-        }
-
         try {
-            const { kind, payload } = event.data;
+            state.queue.push(event);
 
-            switch (kind) {
-                case "get": {
-                    const [key] = payload;
-                    const value = cache.get(String(key));
-                    self.postMessage(
-                        createSafeSuccessResult(value),
-                    );
-                    break;
-                }
+            if (state.isProcessing) {
+                return;
+            }
 
-                case "remove": {
-                    const [key] = payload;
-                    cache.delete(String(key));
-                    self.postMessage(
-                        new Ok(None),
-                    );
-                    break;
-                }
+            state.isProcessing = true;
 
-                case "set": {
-                    const [key, value] = payload;
-                    cache.set(String(key), value);
-                    self.postMessage(
-                        new Ok(None),
-                    );
-                    break;
-                }
-
-                case "sendAll": {
-                    self.postMessage(
-                        createSafeSuccessResult(Object.fromEntries(cache)),
-                    );
-                    break;
-                }
-
-                default: {
+            while (state.queue.length > 0) {
+                const currentEvent = state.queue.shift();
+                if (!currentEvent?.data) {
                     self.postMessage(
                         createAppErrorResult(
                             new WorkerMessageError(
-                                `Unknown message kind: "${
-                                    String(kind)
-                                }" received in cache worker`,
+                                "No data received in cache worker message",
                             ),
                         ),
                     );
-                    break;
+                    return;
+                }
+
+                const { data } = currentEvent;
+                const { kind, payload } = data;
+
+                switch (kind) {
+                    case "get": {
+                        const [key] = payload;
+                        const value = state.cache.get(String(key));
+                        self.postMessage(
+                            createSafeSuccessResult(value),
+                        );
+                        break;
+                    }
+
+                    case "remove": {
+                        const [key] = payload;
+                        state.cache.delete(String(key));
+                        self.postMessage(
+                            new Ok(None),
+                        );
+                        break;
+                    }
+
+                    case "set": {
+                        const [key, value] = payload;
+                        state.cache.set(String(key), value);
+                        self.postMessage(
+                            new Ok(None),
+                        );
+                        break;
+                    }
+
+                    case "sendAll": {
+                        self.postMessage(
+                            createSafeSuccessResult(
+                                Object.fromEntries(state.cache),
+                            ),
+                        );
+                        break;
+                    }
+
+                    default: {
+                        self.postMessage(
+                            createAppErrorResult(
+                                new WorkerMessageError(
+                                    `Unknown message kind: "${
+                                        String(kind)
+                                    }" received in cache worker`,
+                                ),
+                            ),
+                        );
+                        break;
+                    }
                 }
             }
 
+            state.isProcessing = false;
             return;
         } catch (error: unknown) {
             self.postMessage(
