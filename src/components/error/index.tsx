@@ -10,6 +10,7 @@ import LoggerWorker from "./loggerWorker?worker";
 import { errorReducer } from "./reducers";
 import { initialErrorState } from "./state";
 
+// Wraps a component with shared error handling, worker-backed logging, and suspense support.
 function ErrorSuspenseHOC<
     Props extends Record<PropertyKey, unknown> = Record<
         PropertyKey,
@@ -31,6 +32,7 @@ function ErrorSuspenseHOC<
         const isComponentMountedRef = useMountedRef();
 
         useEffect(() => {
+            // Initialize the logger worker exactly once for this mounted wrapper instance.
             if (loggerWorkerMaybe.some) {
                 return;
             }
@@ -43,6 +45,7 @@ function ErrorSuspenseHOC<
             loggerWorker.onmessage = async (
                 event: MessageEventLoggerWorkerToMain,
             ) => {
+                // Route worker messages through a single handler to keep side effects centralized.
                 await handleMessageFromLoggerWorker({
                     errorDispatch,
                     event,
@@ -51,11 +54,13 @@ function ErrorSuspenseHOC<
             };
 
             return () => {
+                // Ensure the worker is torn down to prevent leaks and stale callbacks.
                 loggerWorker.terminate();
                 isComponentMountedRef.current = false;
             };
         }, []);
 
+        // Allow reducer-driven state to override the initial child state as updates arrive.
         const propsModified = {
             childComponentState: {
                 ...initialChildComponentState,
@@ -84,6 +89,7 @@ function ErrorSuspenseHOC<
                     console.groupEnd();
 
                     if (loggerWorkerMaybe.some) {
+                        // Forward error context to the logging worker for async processing.
                         loggerWorkerMaybe.val.postMessage({
                             url: "/test-url",
                             requestInit: {},
