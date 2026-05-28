@@ -41,14 +41,14 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
         isProcessing: false,
     };
 
-    self.onmessage = async (
+    async function handleWorkerMessageEvent(
         event: MessageEventMainToCacheWorker,
-    ) => {
+    ): Promise<None> {
         try {
             state.queue.push(event);
 
             if (state.isProcessing) {
-                return;
+                return None;
             }
 
             state.isProcessing = true;
@@ -63,7 +63,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                             ),
                         ),
                     );
-                    return;
+                    return None;
                 }
 
                 const { data } = currentEvent;
@@ -120,30 +120,47 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                     }
                 }
             }
-
-            state.isProcessing = false;
-            return;
         } catch (error: unknown) {
             self.postMessage(
                 createErrorResult(
                     new WorkerError(error),
                 ),
             );
+        } finally {
+            state.isProcessing = false;
+            return None;
         }
-    };
-}
+    }
 
-self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in cache worker:", event);
-    self.postMessage(
-        createErrorResult(
-            new WorkerError(
-                event,
-                "Unhandled error in cache worker",
+    function handleWorkerMessageError(event: string | Event) {
+        console.error("Unhandled error in cache worker:", event);
+        self.postMessage(
+            createErrorResult(
+                new WorkerError(
+                    event,
+                    "Unhandled error in cache worker",
+                ),
             ),
-        ),
-    );
-    return true; // Prevents default logging to console
-};
+        );
+        return true; // Prevents default logging to console
+    }
+
+    function handleWorkerMessageErrorFallback(event: MessageEvent) {
+        console.error("Message error in cache worker:", event);
+        self.postMessage(
+            createErrorResult(
+                new WorkerMessageError(
+                    event,
+                    "Message error occurred in cache worker",
+                ),
+            ),
+        );
+        return true; // Prevents default logging to console
+    }
+
+    self.onmessage = handleWorkerMessageEvent;
+    self.onmessageerror = handleWorkerMessageErrorFallback;
+    self.onerror = handleWorkerMessageError;
+}
 
 export type { MessageEventCacheWorkerToMain, MessageEventMainToCacheWorker };
