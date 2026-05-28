@@ -68,20 +68,20 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
     function connectToWebSocketServer(
         webSocketServerUrl: string,
         reconnectTimeout: number,
-    ): WebSocket {
+    ): AppResult<WebSocket> {
         try {
             const socket = new WebSocket(webSocketServerUrl);
 
-            socket.onopen = () => {
+            function handleSocketOpen() {
                 clearTimeout(reconnectTimeout);
                 self.postMessage(
                     createSuccessResult(
                         "Web socket connected successfully",
                     ),
                 );
-            };
+            }
 
-            socket.onerror = (event: Event) => {
+            function handleSocketError(event: Event) {
                 console.error("Unhandled error in web socket:", event);
                 self.postMessage(
                     createErrorResult(
@@ -92,9 +92,9 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     ),
                 );
                 return true; // Prevents default logging to console
-            };
+            }
 
-            socket.onmessage = (event: MessageEventServerToWebSocket) => {
+            function handleSocketMessage(event: MessageEventServerToWebSocket) {
                 try {
                     if (event.data == null) {
                         self.postMessage(
@@ -106,8 +106,6 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                         );
                         return;
                     }
-
-                    const parsed = JSON.parse(event.data);
                 } catch (error: unknown) {
                     self.postMessage(
                         createErrorResult(
@@ -118,21 +116,29 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                         ),
                     );
                 }
-            };
+            }
 
-            socket.onclose = (event: CloseEvent) => {};
-
-            return socket;
-        } catch (error: unknown) {
-            self.postMessage(
-                createErrorResult(
-                    new WebSocketError(
-                        error,
-                        "Error occurred while connecting to web socket server",
+            function handleSocketClose(event: CloseEvent) {
+                self.postMessage(
+                    createSuccessResult(
+                        `Web socket closed with code ${event.code} and reason: ${event.reason}`,
                     ),
+                );
+            }
+
+            socket.onopen = handleSocketOpen;
+            socket.onerror = handleSocketError;
+            socket.onmessage = handleSocketMessage;
+            socket.onclose = handleSocketClose;
+
+            return createSuccessResult(socket);
+        } catch (error: unknown) {
+            return createErrorResult(
+                new WebSocketError(
+                    error,
+                    "Error occurred while connecting to web socket server",
                 ),
             );
-            throw error;
         }
     }
 
