@@ -1,3 +1,4 @@
+import { None } from "ts-results";
 import { async_timeout_ms } from "../constants";
 import {
     PromiseRejectionError,
@@ -7,6 +8,7 @@ import {
 import type { AppResult } from "../types";
 import {
     createErrorResult,
+    createSuccessResult,
     getCachedItemAbortableSafe,
     removeCachedItemAbortableSafe,
     setCachedItemAbortableSafe,
@@ -30,86 +32,126 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
         }
     >;
 
-self.onmessage = async (
-    event: MessageEventMainToForageWorker,
-) => {
-    if (!event.data) {
-        self.postMessage(
-            createErrorResult(
-                new WorkerMessageError(
-                    "No data received in forage worker message",
-                ),
-            ),
-        );
-        return;
-    }
+{ // block scope for persistent worker state
+    type ForageWorkerState = {
+        queue: MessageEventMainToForageWorker[];
+        isProcessing: boolean;
+    };
 
-    const { abort, signal } = new AbortController();
-    const timeout = setTimeout(() => {
-        abort();
-    }, async_timeout_ms);
+    const state: ForageWorkerState = {
+        queue: [],
+        isProcessing: false,
+    };
 
-    try {
-        const { kind, payload } = event.data;
-
-        switch (kind) {
-            case "get": {
-                const [key] = payload;
-                const getResult = await getCachedItemAbortableSafe<
-                    unknown
-                >(key, signal);
-                self.postMessage(getResult);
-                break;
-            }
-
-            case "set": {
-                const [key, value] = payload;
-                const setResult = await setCachedItemAbortableSafe(
-                    key,
-                    value,
-                    signal,
-                );
-                self.postMessage(setResult);
-                break;
-            }
-
-            case "remove": {
-                const [key] = payload;
-                const removeResult = await removeCachedItemAbortableSafe(
-                    key,
-                    signal,
-                );
-                self.postMessage(removeResult);
-                break;
-            }
-
-            default: {
-                self.postMessage(
-                    createErrorResult(
-                        new WorkerError(
-                            `Unknown kind in forage worker message: ${
-                                String(
-                                    kind,
-                                )
-                            }`,
-                        ),
+    async function processMessageEvent(
+        event: MessageEventMainToForageWorker,
+    ): Promise<void> {
+        if (!event.data) {
+            self.postMessage(
+                createErrorResult(
+                    new WorkerMessageError(
+                        "No data received in forage worker message",
                     ),
-                );
-                break;
-            }
+                ),
+            );
+            return;
         }
 
-        return;
-    } catch (error: unknown) {
-        self.postMessage(
-            createErrorResult(
-                new WorkerError(error),
-            ),
-        );
-    } finally {
-        clearTimeout(timeout);
+        const { abort, signal } = new AbortController();
+        const timeout = setTimeout(() => {
+            abort();
+        }, async_timeout_ms);
+
+        try {
+            const { kind, payload } = event.data;
+
+            switch (kind) {
+                case "get": {
+                    const [key] = payload;
+                    const getResult = await getCachedItemAbortableSafe<
+                        unknown
+                    >(key, signal);
+                    self.postMessage(getResult);
+                    break;
+                }
+
+                case "set": {
+                    const [key, value] = payload;
+                    await setCachedItemAbortableSafe(
+                        key,
+                        value,
+                        signal,
+                    );
+                    self.postMessage(createSuccessResult(None));
+                    break;
+                }
+
+                case "remove": {
+                    const [key] = payload;
+                    await removeCachedItemAbortableSafe(
+                        key,
+                        signal,
+                    );
+                    self.postMessage(createSuccessResult(None));
+                    break;
+                }
+
+                default: {
+                    self.postMessage(
+                        createErrorResult(
+                            new WorkerMessageError(
+                                `Unknown message kind: "${
+                                    String(kind)
+                                }" received in forage worker`,
+                            ),
+                        ),
+                    );
+                    break;
+                }
+            }
+        } catch (error: unknown) {
+            self.postMessage(
+                createErrorResult(
+                    new WorkerError(error),
+                ),
+            );
+        } finally {
+            clearTimeout(timeout);
+        }
     }
-};
+
+    self.onmessage = async (
+        event: MessageEventMainToForageWorker,
+    ) => {
+        state.queue.push(event);
+
+        if (state.isProcessing) {
+            return;
+        }
+
+        state.isProcessing = true;
+
+        try {
+            while (state.queue.length > 0) {
+                const currentEvent = state.queue.shift();
+
+                if (!currentEvent) {
+                    continue;
+                }
+
+                await processMessageEvent(currentEvent);
+            }
+        } catch (error: unknown) {
+            self.postMessage(
+                createErrorResult(
+                    new WorkerError(error),
+                ),
+            );
+        } finally {
+            state.isProcessing = false;
+        }
+    };
+}
 
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in forage worker:", event);
