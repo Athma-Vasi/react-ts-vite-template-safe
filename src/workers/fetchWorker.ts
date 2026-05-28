@@ -46,7 +46,7 @@ type MessageEventMainToFetchWorker = MessageEvent<{
 
     async function processMessageEvent(
         event: MessageEventMainToFetchWorker,
-    ): Promise<void> {
+    ): Promise<None> {
         if (!event.data) {
             self.postMessage(
                 createErrorResult(
@@ -55,7 +55,7 @@ type MessageEventMainToFetchWorker = MessageEvent<{
                     ),
                 ),
             );
-            return;
+            return None;
         }
 
         const { abort, signal } = new AbortController();
@@ -73,13 +73,13 @@ type MessageEventMainToFetchWorker = MessageEvent<{
 
             if (responseResult.err) {
                 self.postMessage(responseResult);
-                return;
+                return None;
             }
 
             const responseMaybe = responseResult.safeUnwrap();
             if (responseMaybe.none) {
                 self.postMessage(createSuccessResult(None));
-                return;
+                return None;
             }
 
             const object = responseMaybe.safeUnwrap();
@@ -93,7 +93,7 @@ type MessageEventMainToFetchWorker = MessageEvent<{
                         ),
                     ),
                 );
-                return;
+                return None;
             }
 
             const parsedDataResult = parseSyncSafe({
@@ -110,16 +110,17 @@ type MessageEventMainToFetchWorker = MessageEvent<{
             );
         } finally {
             clearTimeout(timeout);
+            return None;
         }
     }
 
-    self.onmessage = async (
+    async function handleWorkerMessageEvent(
         event: MessageEventMainToFetchWorker,
-    ) => {
+    ): Promise<None> {
         state.queue.push(event);
 
         if (state.isProcessing) {
-            return;
+            return None;
         }
 
         state.isProcessing = true;
@@ -142,36 +143,58 @@ type MessageEventMainToFetchWorker = MessageEvent<{
             );
         } finally {
             state.isProcessing = false;
+            return None;
         }
-    };
-}
+    }
 
-self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in fetch worker:", event);
-    self.postMessage(
-        createErrorResult(
-            new WorkerError(
-                event,
-                "Unhandled error in fetch worker",
+    function handleWorkerMessageError(event: string | Event) {
+        console.error("Unhandled error in fetch worker:", event);
+        self.postMessage(
+            createErrorResult(
+                new WorkerError(
+                    event,
+                    "Unhandled error in fetch worker",
+                ),
             ),
-        ),
-    );
-    return true; // Prevents default logging to console
-};
+        );
+        return true; // Prevents default logging to console
+    }
 
-self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
-    console.error(
-        "Unhandled promise rejection in fetch worker:",
-        event.reason,
-    );
-    self.postMessage(
-        createErrorResult(
-            new PromiseRejectionError(
+    function handleWorkerMessageErrorFallback(event: MessageEvent) {
+        console.error("Message error in fetch worker:", event);
+        self.postMessage(
+            createErrorResult(
+                new WorkerMessageError(
+                    event,
+                    "Message error occurred in fetch worker",
+                ),
+            ),
+        );
+        return true; // Prevents default logging to console
+    }
+
+    self.onmessage = handleWorkerMessageEvent;
+    self.onerror = handleWorkerMessageError;
+    // fallback for any unforeseen errors in message handling
+    self.onmessageerror = handleWorkerMessageErrorFallback;
+
+    self.addEventListener(
+        "unhandledrejection",
+        (event: PromiseRejectionEvent) => {
+            console.error(
+                "Unhandled promise rejection in fetch worker:",
                 event.reason,
-                "Unhandled promise rejection in fetch worker",
-            ),
-        ),
+            );
+            self.postMessage(
+                createErrorResult(
+                    new PromiseRejectionError(
+                        event.reason,
+                        "Unhandled promise rejection in fetch worker",
+                    ),
+                ),
+            );
+        },
     );
-});
+}
 
 export type { MessageEventFetchWorkerToMain, MessageEventMainToFetchWorker };
