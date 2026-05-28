@@ -120,13 +120,13 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
         }
     }
 
-    self.onmessage = async (
+    async function handleWorkerMessageEvent(
         event: MessageEventMainToForageWorker,
-    ) => {
+    ): Promise<None> {
         state.queue.push(event);
 
         if (state.isProcessing) {
-            return;
+            return None;
         }
 
         state.isProcessing = true;
@@ -149,36 +149,43 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
             );
         } finally {
             state.isProcessing = false;
+            return None;
         }
-    };
-}
+    }
 
-self.onerror = (event: string | Event) => {
-    console.error("Unhandled error in forage worker:", event);
-    self.postMessage(
-        createErrorResult(
-            new WorkerError(
-                event,
-                "Unhandled error in forage worker",
+    function handleWorkerErrorEvent(event: string | Event): boolean {
+        console.error("Unhandled error in forage worker:", event);
+        self.postMessage(
+            createErrorResult(
+                new WorkerError(
+                    event,
+                    "Unhandled error in forage worker",
+                ),
             ),
-        ),
-    );
-    return true; // Prevents default logging to console
-};
+        );
+        return true; // Prevents default logging to console
+    }
 
-self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
-    console.error(
-        "Unhandled promise rejection in forage worker:",
-        event.reason,
-    );
-    self.postMessage(
-        createErrorResult(
-            new PromiseRejectionError(
+    self.onmessage = handleWorkerMessageEvent;
+    self.onerror = handleWorkerErrorEvent;
+
+    self.addEventListener(
+        "unhandledrejection",
+        (event: PromiseRejectionEvent) => {
+            console.error(
+                "Unhandled promise rejection in forage worker:",
                 event.reason,
-                "Unhandled promise rejection in forage worker",
-            ),
-        ),
+            );
+            self.postMessage(
+                createErrorResult(
+                    new PromiseRejectionError(
+                        event.reason,
+                        "Unhandled promise rejection in forage worker",
+                    ),
+                ),
+            );
+        },
     );
-});
+}
 
 export type { MessageEventForageWorkerToMain, MessageEventMainToForageWorker };
