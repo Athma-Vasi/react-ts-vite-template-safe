@@ -1,7 +1,7 @@
 import { fetch_timeout_ms } from "../../constants";
 import { WorkerError, WorkerMessageError } from "../../errors";
 import type { AppResult } from "../../types";
-import { createAppErrorResult, createSafeSuccessResult } from "../../utils";
+import { createErrorResult, createSuccessResult } from "../../utils";
 
 type MessageEventLoggerWorkerToMain<Data = unknown> = MessageEvent<
     AppResult<Data>
@@ -20,7 +20,7 @@ self.onmessage = async (
 ) => {
     if (!event.data) {
         self.postMessage(
-            createAppErrorResult(
+            createErrorResult(
                 new WorkerMessageError(
                     "No data received in cache worker message",
                 ),
@@ -47,13 +47,13 @@ self.onmessage = async (
         // return;
 
         self.postMessage(
-            createSafeSuccessResult("Logger worker received message"),
+            createSuccessResult("Logger worker received message"),
         );
         clearTimeout(timeout);
         return;
     } catch (error: unknown) {
         self.postMessage(
-            createAppErrorResult(
+            createErrorResult(
                 new WorkerError(error),
             ),
         );
@@ -63,7 +63,7 @@ self.onmessage = async (
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in cache worker:", event);
     self.postMessage(
-        createAppErrorResult(
+        createErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in cache worker",

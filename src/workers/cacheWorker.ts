@@ -1,7 +1,7 @@
-import { None, Ok } from "ts-results";
+import { None } from "ts-results";
 import { WorkerError, WorkerMessageError } from "../errors";
 import type { AppResult } from "../types";
-import { createAppErrorResult, createSafeSuccessResult } from "../utils";
+import { createErrorResult, createSuccessResult } from "../utils";
 
 type MessageEventCacheWorkerToMain<Data = unknown> = MessageEvent<
     AppResult<Data>
@@ -57,7 +57,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                 const currentEvent = state.queue.shift();
                 if (!currentEvent?.data) {
                     self.postMessage(
-                        createAppErrorResult(
+                        createErrorResult(
                             new WorkerMessageError(
                                 "No data received in cache worker message",
                             ),
@@ -74,7 +74,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                         const [key] = payload;
                         const value = state.cache.get(String(key));
                         self.postMessage(
-                            createSafeSuccessResult(value),
+                            createSuccessResult(value),
                         );
                         break;
                     }
@@ -83,7 +83,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                         const [key] = payload;
                         state.cache.delete(String(key));
                         self.postMessage(
-                            new Ok(None),
+                            createSuccessResult(None),
                         );
                         break;
                     }
@@ -92,14 +92,14 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                         const [key, value] = payload;
                         state.cache.set(String(key), value);
                         self.postMessage(
-                            new Ok(None),
+                            createSuccessResult(None),
                         );
                         break;
                     }
 
                     case "sendAll": {
                         self.postMessage(
-                            createSafeSuccessResult(
+                            createSuccessResult(
                                 Object.fromEntries(state.cache),
                             ),
                         );
@@ -108,7 +108,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
 
                     default: {
                         self.postMessage(
-                            createAppErrorResult(
+                            createErrorResult(
                                 new WorkerMessageError(
                                     `Unknown message kind: "${
                                         String(kind)
@@ -125,7 +125,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
             return;
         } catch (error: unknown) {
             self.postMessage(
-                createAppErrorResult(
+                createErrorResult(
                     new WorkerError(error),
                 ),
             );
@@ -136,7 +136,7 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in cache worker:", event);
     self.postMessage(
-        createAppErrorResult(
+        createErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in cache worker",

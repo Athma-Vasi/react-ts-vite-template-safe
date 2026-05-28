@@ -6,7 +6,7 @@ import {
 } from "../errors";
 import type { AppResult } from "../types";
 import {
-    createAppErrorResult,
+    createErrorResult,
     getCachedItemAbortableSafe,
     removeCachedItemAbortableSafe,
     setCachedItemAbortableSafe,
@@ -35,7 +35,7 @@ self.onmessage = async (
 ) => {
     if (!event.data) {
         self.postMessage(
-            createAppErrorResult(
+            createErrorResult(
                 new WorkerMessageError(
                     "No data received in forage worker message",
                 ),
@@ -85,7 +85,7 @@ self.onmessage = async (
 
             default: {
                 self.postMessage(
-                    createAppErrorResult(
+                    createErrorResult(
                         new WorkerError(
                             `Unknown kind in forage worker message: ${
                                 String(
@@ -102,7 +102,7 @@ self.onmessage = async (
         return;
     } catch (error: unknown) {
         self.postMessage(
-            createAppErrorResult(
+            createErrorResult(
                 new WorkerError(error),
             ),
         );
@@ -114,7 +114,7 @@ self.onmessage = async (
 self.onerror = (event: string | Event) => {
     console.error("Unhandled error in forage worker:", event);
     self.postMessage(
-        createAppErrorResult(
+        createErrorResult(
             new WorkerError(
                 event,
                 "Unhandled error in forage worker",
@@ -130,7 +130,7 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
         event.reason,
     );
     self.postMessage(
-        createAppErrorResult(
+        createErrorResult(
             new PromiseRejectionError(
                 event.reason,
                 "Unhandled promise rejection in forage worker",

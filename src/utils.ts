@@ -28,13 +28,13 @@ import {
 } from "./errors";
 import type { AppResult } from "./types";
 
-function createSafeSuccessResult<Data = unknown>(
+function createSuccessResult<Data = unknown>(
     data: Data,
 ): Ok<Option<NonNullable<Data>>> {
     return new Ok(data == null ? None : Some(data));
 }
 
-function createAppErrorResult(
+function createErrorResult(
     appErrorBase: AppErrorBase,
 ): Err<AppErrorBase> {
     if (appErrorBase instanceof AppErrorBase) {
@@ -44,7 +44,7 @@ function createAppErrorResult(
     return new Err(
         new UnknownError(
             appErrorBase,
-            "createAppErrorResult received non-AppErrorBase instance",
+            "createErrorResult received non-AppErrorBase instance",
         ),
     );
 }
@@ -61,14 +61,14 @@ function parseSyncSafe<Output = unknown>(
             : schema.safeParse(object);
 
         return success
-            ? createSafeSuccessResult(data as Output)
-            : createAppErrorResult(
+            ? createSuccessResult(data as Output)
+            : createErrorResult(
                 new ParseError(
                     `Failed to parse object: ${error.message}`,
                 ),
             );
     } catch (error_: unknown) {
-        return createAppErrorResult(
+        return createErrorResult(
             new ParseError(
                 error_,
                 `Exception thrown during parse of object:
@@ -160,7 +160,7 @@ async function getCachedItemAbortableSafe<Data = unknown>(
     signal: AbortSignal,
 ): Promise<AppResult<Data>> {
     if (signal.aborted) {
-        return createAppErrorResult(
+        return createErrorResult(
             new PromiseAbortedError(
                 "getCachedItemAbortableSafe aborted before start",
             ),
@@ -170,9 +170,9 @@ async function getCachedItemAbortableSafe<Data = unknown>(
     try {
         const cacheOperation = localforage.getItem<Data>(key);
         const data = await makeAbortable(cacheOperation, signal);
-        return createSafeSuccessResult(data);
+        return createSuccessResult(data);
     } catch (error: unknown) {
-        return createAppErrorResult(
+        return createErrorResult(
             new CacheError(error, `Failed to get cached item for key: ${key}`),
         );
     }
@@ -184,7 +184,7 @@ async function setCachedItemAbortableSafe<Data = unknown>(
     signal: AbortSignal,
 ): Promise<AppResult> {
     if (signal.aborted) {
-        return createAppErrorResult(
+        return createErrorResult(
             new PromiseAbortedError(
                 "setCachedItemAbortableSafe aborted before start",
             ),
@@ -196,7 +196,7 @@ async function setCachedItemAbortableSafe<Data = unknown>(
         await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
-        return createAppErrorResult(
+        return createErrorResult(
             new CacheError(error, `Failed to set cached item for key: ${key}`),
         );
     }
@@ -207,7 +207,7 @@ async function removeCachedItemAbortableSafe(
     signal: AbortSignal,
 ): Promise<AppResult> {
     if (signal.aborted) {
-        return createAppErrorResult(
+        return createErrorResult(
             new PromiseAbortedError(
                 "removeCachedItemAbortableSafe aborted before start",
             ),
@@ -219,7 +219,7 @@ async function removeCachedItemAbortableSafe(
         await makeAbortable(cacheOperation, signal);
         return new Ok(None);
     } catch (error: unknown) {
-        return createAppErrorResult(
+        return createErrorResult(
             new CacheError(
                 error,
                 `Failed to remove cached item for key: ${key}`,
@@ -271,14 +271,14 @@ async function retryFetchSafe<
                 }
 
                 return Promise.resolve(
-                    createSafeSuccessResult<Data>(
+                    createSuccessResult<Data>(
                         data as Data,
                     ),
                 );
             } catch (error_: unknown) {
                 if (attempt === retries) {
                     return Promise.resolve(
-                        createAppErrorResult(
+                        createErrorResult(
                             new JSONError(
                                 error_,
                                 "Failed to parse JSON response after maximum retries",
@@ -292,7 +292,7 @@ async function retryFetchSafe<
         } catch (error: unknown) {
             if (attempt === retries) {
                 return Promise.resolve(
-                    createAppErrorResult(
+                    createErrorResult(
                         new NetworkError(error, 503, "Max retries reached"),
                     ),
                 );
@@ -338,7 +338,7 @@ function sendMessageToWorker<
             dispatch({
                 action: actions.setSafeErrorMaybe,
                 payload: Some(
-                    createAppErrorResult(
+                    createErrorResult(
                         new NotFoundError(
                             `Worker is not initialized for message: ${
                                 String(message)
@@ -358,7 +358,7 @@ function sendMessageToWorker<
         dispatch({
             action: actions.setSafeErrorMaybe,
             payload: Some(
-                createAppErrorResult(
+                createErrorResult(
                     new WorkerMessageError(
                         error,
                         `Failed to post message: ${String(message)} to worker`,
@@ -390,8 +390,8 @@ function capitalizeString(str: string): string {
 
 export {
     capitalizeString,
-    createAppErrorResult,
-    createSafeSuccessResult,
+    createErrorResult,
+    createSuccessResult,
     getCachedItemAbortableSafe,
     parseDispatchAndSetState,
     parseSyncSafe,

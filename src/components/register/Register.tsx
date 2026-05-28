@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef } from "react";
 import { Some } from "ts-results";
 import { HTTPError } from "../../errors";
 import { useMountedRef } from "../../hooks/useMountedRef";
-import { createAppErrorResult, sendMessageToWorker } from "../../utils";
+import { createErrorResult, sendMessageToWorker } from "../../utils";
 import type {
     MessageEventCacheWorkerToMain,
     MessageEventMainToCacheWorker,
@@ -147,7 +147,7 @@ function Register(
         registerDispatch({
             action: registerActions.setSafeErrorMaybe,
             payload: Some(
-                createAppErrorResult(
+                createErrorResult(
                     new HTTPError(
                         new Error(),
                         "Simulated random error occurred.",
@@ -167,7 +167,7 @@ function Register(
         registerDispatch({
             action: registerActions.setSafeErrorMaybe,
             payload: Some(
-                createAppErrorResult(
+                createErrorResult(
                     new HTTPError(
                         new Error(),
                         "Simulated random error occurred.",

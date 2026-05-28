@@ -6,7 +6,7 @@ import {
     WebSocketWorkerMessageError,
 } from "../errors";
 import type { AppResult } from "../types";
-import { createAppErrorResult, createSafeSuccessResult } from "../utils";
+import { createErrorResult, createSuccessResult } from "../utils";
 
 type MessageEventWebSocketWorkerToMain<Data = unknown> = MessageEvent<
     {
@@ -75,7 +75,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
             socket.onopen = () => {
                 clearTimeout(reconnectTimeout);
                 self.postMessage(
-                    createSafeSuccessResult(
+                    createSuccessResult(
                         "Web socket connected successfully",
                     ),
                 );
@@ -84,7 +84,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
             socket.onerror = (event: Event) => {
                 console.error("Unhandled error in web socket:", event);
                 self.postMessage(
-                    createAppErrorResult(
+                    createErrorResult(
                         new WebSocketError(
                             event,
                             "Unhandled error in web socket",
@@ -98,7 +98,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                 try {
                     if (event.data == null) {
                         self.postMessage(
-                            createAppErrorResult(
+                            createErrorResult(
                                 new WebSocketMessageError(
                                     "No data received from web socket server",
                                 ),
@@ -110,7 +110,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     const parsed = JSON.parse(event.data);
                 } catch (error: unknown) {
                     self.postMessage(
-                        createAppErrorResult(
+                        createErrorResult(
                             new WebSocketError(
                                 error,
                                 "Error occurred while handling message from web socket server",
@@ -125,7 +125,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
             return socket;
         } catch (error: unknown) {
             self.postMessage(
-                createAppErrorResult(
+                createErrorResult(
                     new WebSocketError(
                         error,
                         "Error occurred while connecting to web socket server",
@@ -163,7 +163,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
         try {
             if (!event.data) {
                 self.postMessage(
-                    createAppErrorResult(
+                    createErrorResult(
                         new WebSocketWorkerMessageError(
                             "No data received in web socket worker message",
                         ),
@@ -185,7 +185,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     if (webSocketServerUrlMaybe.some) {
                         // already connected or connecting
                         self.postMessage(
-                            createAppErrorResult(
+                            createErrorResult(
                                 new WebSocketWorkerMessageError(
                                     "Web socket worker is already connected or connecting.",
                                 ),
@@ -197,7 +197,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     if (socketMaybe.some) {
                         // should not happen, but just in case
                         self.postMessage(
-                            createAppErrorResult(
+                            createErrorResult(
                                 new WebSocketWorkerError(
                                     "Web socket worker has an existing socket while trying to connect.",
                                 ),
@@ -224,7 +224,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
 
                 default: {
                     self.postMessage(
-                        createAppErrorResult(
+                        createErrorResult(
                             new WebSocketWorkerMessageError(
                                 `Unknown message kind: "${
                                     String(kind)
@@ -237,7 +237,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
             }
         } catch (error: unknown) {
             self.postMessage(
-                createAppErrorResult(
+                createErrorResult(
                     new WebSocketWorkerMessageError(
                         error,
                         "Error occurred while handling message in web socket worker",
@@ -261,7 +261,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
     self.onerror = (event: string | Event) => {
         console.error("Unhandled error in web socket worker:", event);
         self.postMessage(
-            createAppErrorResult(
+            createErrorResult(
                 new WebSocketWorkerError(
                     event,
                     "Unhandled error in web socket worker",
