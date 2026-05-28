@@ -267,7 +267,7 @@ type MessageEventServerToWebSocket<Data = unknown> = MessageEvent<Data>;
         }
     }
 
-    function handleWorkerErrorEvent(event: string | Event) {
+    function handleWorkerErrorEvent(event: string | Event): boolean {
         console.error("Unhandled error in web socket worker:", event);
         self.postMessage(
             createErrorResult(
@@ -280,7 +280,7 @@ type MessageEventServerToWebSocket<Data = unknown> = MessageEvent<Data>;
         return true; // Prevents default logging to console
     }
 
-    function handleWorkerCloseEvent() {
+    function handleWorkerCloseEvent(): None {
         const { reconnectTimeout, shouldReconnect, webSocketServerUrlMaybe } =
             state;
 
@@ -299,6 +299,8 @@ type MessageEventServerToWebSocket<Data = unknown> = MessageEvent<Data>;
                 }
             }, reconnectTimeout);
         }
+
+        return None;
     }
 
     self.onmessage = handleWorkerMessageEvent;
