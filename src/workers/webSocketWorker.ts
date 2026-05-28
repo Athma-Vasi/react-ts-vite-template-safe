@@ -1,11 +1,11 @@
-import { None, type Option } from "ts-results";
+import { None, Some } from "ts-results";
 import {
     WebSocketError,
     WebSocketMessageError,
     WebSocketWorkerError,
     WebSocketWorkerMessageError,
 } from "../errors";
-import type { AppResult } from "../types";
+import type { AppResult, SafeSuccess } from "../types";
 import { createErrorResult, createSuccessResult } from "../utils";
 
 type MessageEventWebSocketWorkerToMain<Data = unknown> = MessageEvent<
@@ -48,14 +48,14 @@ type MessageEventMainToWebSocketWorker<
     }
 >;
 
-type MessageEventServerToWebSocket = MessageEvent<unknown>;
+type MessageEventServerToWebSocket<Data = unknown> = MessageEvent<Data>;
 
 { // block scope for persistent worker state
     type WebSocketWorkerState = {
-        socketMaybe: Option<WebSocket>;
+        socketMaybe: SafeSuccess<WebSocket>;
         shouldReconnect: boolean;
         reconnectTimeout: number;
-        webSocketServerUrlMaybe: Option<string>;
+        webSocketServerUrlMaybe: SafeSuccess<string>;
     };
 
     const state: WebSocketWorkerState = {
@@ -106,6 +106,13 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                         );
                         return;
                     }
+
+                    self.postMessage(
+                        createSuccessResult(
+                            event.data,
+                        ),
+                    );
+                    return;
                 } catch (error: unknown) {
                     self.postMessage(
                         createErrorResult(
@@ -165,7 +172,7 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
 
     async function handleWorkerMessageEvent(
         event: MessageEventMainToWebSocketWorker,
-    ) {
+    ): Promise<None> {
         try {
             if (!event.data) {
                 self.postMessage(
@@ -175,11 +182,11 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                         ),
                     ),
                 );
-                return;
+                return None;
             }
 
             const {
-                reconnectTimeoutMaybe,
+                reconnectTimeout,
                 shouldReconnect,
                 socketMaybe,
                 webSocketServerUrlMaybe,
@@ -197,22 +204,25 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                                 ),
                             ),
                         );
-                        return;
-                    }
-
-                    if (socketMaybe.some) {
-                        // should not happen, but just in case
-                        self.postMessage(
-                            createErrorResult(
-                                new WebSocketWorkerError(
-                                    "Web socket worker has an existing socket while trying to connect.",
-                                ),
-                            ),
-                        );
-                        return;
+                        break;
                     }
 
                     const [webSocketServerUrl] = payload;
+                    const connectResult = connectToWebSocketServer(
+                        webSocketServerUrl,
+                        reconnectTimeout,
+                    );
+
+                    if (connectResult.err) {
+                        self.postMessage(connectResult);
+                        break;
+                    }
+
+                    state.socketMaybe = connectResult.safeUnwrap();
+                    state.webSocketServerUrlMaybe = !webSocketServerUrl
+                        ? None
+                        : Some(webSocketServerUrl);
+                    state.shouldReconnect = true;
 
                     break;
                 }
@@ -224,7 +234,8 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                 }
 
                 case "disconnect": {
-                    // Implementation will go here
+                    state.shouldReconnect = false;
+                    cleanupWebSocketConnection(reconnectTimeout);
                     break;
                 }
 
@@ -241,6 +252,8 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     break;
                 }
             }
+
+            return None;
         } catch (error: unknown) {
             self.postMessage(
                 createErrorResult(
@@ -250,21 +263,11 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
                     ),
                 ),
             );
+            return None;
         }
     }
 
-    self.onmessage = handleWorkerMessageEvent;
-
-    // self.addEventListener("unload", () => {
-    //     state.reconnectTimeoutMaybe.map((timeoutId) => {
-    //         clearTimeout(timeoutId);
-    //     });
-    //     state.socketMaybe.map((socket) => {
-    //         socket.close();
-    //     });
-    // });
-
-    self.onerror = (event: string | Event) => {
+    function handleWorkerErrorEvent(event: string | Event) {
         console.error("Unhandled error in web socket worker:", event);
         self.postMessage(
             createErrorResult(
@@ -275,214 +278,35 @@ type MessageEventServerToWebSocket = MessageEvent<unknown>;
             ),
         );
         return true; // Prevents default logging to console
-    };
-}
-
-class WebSocketClient {
-    constructor(url, options = {}) {
-        this.url = url;
-        this.options = {
-            reconnectInterval: 1000,
-            maxReconnectAttempts: 5,
-            beatInterval: 30000,
-            ...options,
-        };
-        this.reconnectAttempts = 0;
-        this.messageQueue = [];
-        this.eventHandlers = {};
-        this.isConnected = false;
-
-        this.connect();
     }
 
-    connect() {
-        console.log(`Connecting to ${this.url}...`);
+    function handleWorkerCloseEvent() {
+        const { reconnectTimeout, shouldReconnect, webSocketServerUrlMaybe } =
+            state;
 
-        try {
-            this.ws = new WebSocket(this.url);
-            this.setupEventHandlers();
-        } catch (error) {
-            console.error("Failed to create WebSocket:", error);
-            this.scheduleReconnect();
-        }
-    }
+        if (shouldReconnect && webSocketServerUrlMaybe.some) {
+            const webSocketServerUrl = webSocketServerUrlMaybe.safeUnwrap();
+            setTimeout(() => {
+                const connectResult = connectToWebSocketServer(
+                    webSocketServerUrl,
+                    reconnectTimeout,
+                );
 
-    setupEventHandlers() {
-        this.ws.onopen = (event) => {
-            console.log("WebSocket connected");
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-
-            // Send any queued messages
-            while (this.messageQueue.length > 0) {
-                const message = this.messageQueue.shift();
-                this.send(message);
-            }
-
-            // Start beat
-            this.startBeat();
-
-            // Trigger custom open handlers
-            this.trigger("open", event);
-        };
-
-        this.ws.onmessage = (event) => {
-            console.log("Message received:", event.data);
-
-            // Try to parse JSON messages
-            let data = event.data;
-            try {
-                data = JSON.parse(event.data);
-            } catch (e) {
-                // Not JSON, use as-is
-            }
-
-            // Handle ping/pong for heartbeat
-            if (data.type === "pong") {
-                this.lastPong = Date.now();
-                return;
-            }
-
-            // Trigger custom message handlers
-            this.trigger("message", data);
-
-            // Trigger typed message handlers
-            if (data.type) {
-                this.trigger(data.type, data);
-            }
-        };
-
-        this.ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-            this.trigger("error", error);
-        };
-
-        this.ws.onclose = (event) => {
-            console.log(`WebSocket closed: ${event.code} - ${event.reason}`);
-            this.isConnected = false;
-            this.stopTimer();
-
-            // Trigger custom close handlers
-            this.trigger("close", event);
-
-            // Attempt to reconnect if not a normal closure
-            if (event.code !== 1000 && event.code !== 1001) {
-                this.scheduleReconnect();
-            }
-        };
-    }
-
-    send(message) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            const data = typeof message === "object"
-                ? JSON.stringify(message)
-                : message;
-            this.ws.send(data);
-        } else {
-            // Queue message if not connected
-            console.log("WebSocket not connected, queuing message");
-            this.messageQueue.push(message);
-        }
-    }
-
-    startBeat() {
-        this.stopTimer();
-        this.timer = setInterval(() => {
-            if (this.ws.readyState === WebSocket.OPEN) {
-                this.send({ type: "ping", timestamp: Date.now() });
-
-                // Check for pong timeout
-                setTimeout(() => {
-                    const timeSinceLastPong = Date.now() - (this.lastPong || 0);
-                    if (
-                        timeSinceLastPong > this.options.beatInterval * 2
-                    ) {
-                        console.log("beat timeout, reconnecting...");
-                        this.ws.close();
-                    }
-                }, 5000);
-            }
-        }, this.options.beatInterval);
-    }
-
-    stopTimer() {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    }
-
-    scheduleReconnect() {
-        if (this.reconnectAttempts >= this.options.maxReconnectAttempts) {
-            console.error("Max reconnection attempts reached");
-            this.trigger("maxReconnectAttemptsReached");
-            return;
-        }
-
-        this.reconnectAttempts++;
-        const delay = this.options.reconnectInterval *
-            Math.pow(2, this.reconnectAttempts - 1);
-        console.log(
-            `Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`,
-        );
-
-        setTimeout(() => {
-            this.connect();
-        }, delay);
-    }
-
-    on(event, handler) {
-        if (!this.eventHandlers[event]) {
-            this.eventHandlers[event] = [];
-        }
-        this.eventHandlers[event].push(handler);
-    }
-
-    off(event, handler) {
-        if (this.eventHandlers[event]) {
-            this.eventHandlers[event] = this.eventHandlers[event].filter(
-                (h) => h !== handler,
-            );
-        }
-    }
-
-    trigger(event, data) {
-        if (this.eventHandlers[event]) {
-            this.eventHandlers[event].forEach((handler) => {
-                try {
-                    handler(data);
-                } catch (error) {
-                    console.error(`Error in ${event} handler:`, error);
+                if (connectResult.err) {
+                    self.postMessage(connectResult);
+                } else {
+                    state.socketMaybe = connectResult.safeUnwrap();
                 }
-            });
+            }, reconnectTimeout);
         }
     }
 
-    close() {
-        this.reconnectAttempts = this.options.maxReconnectAttempts;
-        this.stopTimer();
-        if (this.ws) {
-            this.ws.close(1000, "Client closing connection");
-        }
-    }
+    self.onmessage = handleWorkerMessageEvent;
+    self.onerror = handleWorkerErrorEvent;
+    self.onclose = handleWorkerCloseEvent;
 }
 
-// Usage example
-const client = new WebSocketClient("wss://echo.websocket.org");
-
-client.on("open", () => {
-    console.log("Connected and ready!");
-    client.send({ type: "hello", user: "JavaScript Client" });
-});
-
-client.on("message", (data) => {
-    console.log("Received:", data);
-});
-
-client.on("error", (error) => {
-    console.error("Connection error:", error);
-});
-
-client.on("close", (event) => {
-    console.log("Connection closed:", event.code, event.reason);
-});
+export type {
+    MessageEventMainToWebSocketWorker,
+    MessageEventWebSocketWorkerToMain,
+};
