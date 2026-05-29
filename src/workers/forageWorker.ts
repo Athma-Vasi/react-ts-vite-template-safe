@@ -45,7 +45,7 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
 
     async function processMessageEvent(
         event: MessageEventMainToForageWorker,
-    ): Promise<void> {
+    ): Promise<None> {
         if (!event.data) {
             self.postMessage(
                 createErrorResult(
@@ -54,7 +54,7 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
                     ),
                 ),
             );
-            return;
+            return None;
         }
 
         const { abort, signal } = new AbortController();
@@ -117,6 +117,7 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
             );
         } finally {
             clearTimeout(timeout);
+            return None;
         }
     }
 
@@ -153,7 +154,9 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
         }
     }
 
-    function handleWorkerErrorEvent(event: string | Event): boolean {
+    async function handleWorkerErrorEvent(
+        event: string | Event,
+    ): Promise<None> {
         console.error("Unhandled error in forage worker:", event);
         self.postMessage(
             createErrorResult(
@@ -163,7 +166,26 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
                 ),
             ),
         );
-        return true; // Prevents default logging to console
+        // return true; // Prevents default logging to console
+        return None;
+    }
+
+    async function handlePromiseRejectionEvent(
+        event: PromiseRejectionEvent,
+    ): Promise<None> {
+        console.error(
+            "Unhandled promise rejection in forage worker:",
+            event.reason,
+        );
+        self.postMessage(
+            createErrorResult(
+                new PromiseRejectionError(
+                    event.reason,
+                    "Unhandled promise rejection in forage worker",
+                ),
+            ),
+        );
+        return None;
     }
 
     self.onmessage = handleWorkerMessageEvent;
@@ -171,20 +193,7 @@ type MessageEventMainToForageWorker<Key = string, Value = unknown> =
 
     self.addEventListener(
         "unhandledrejection",
-        (event: PromiseRejectionEvent) => {
-            console.error(
-                "Unhandled promise rejection in forage worker:",
-                event.reason,
-            );
-            self.postMessage(
-                createErrorResult(
-                    new PromiseRejectionError(
-                        event.reason,
-                        "Unhandled promise rejection in forage worker",
-                    ),
-                ),
-            );
-        },
+        handlePromiseRejectionEvent,
     );
 }
 
