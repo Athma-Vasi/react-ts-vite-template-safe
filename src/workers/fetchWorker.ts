@@ -147,7 +147,9 @@ type MessageEventMainToFetchWorker = MessageEvent<{
         }
     }
 
-    function handleWorkerMessageError(event: string | Event) {
+    async function handleWorkerMessageError(
+        event: string | Event,
+    ): Promise<None> {
         console.error("Unhandled error in fetch worker:", event);
         self.postMessage(
             createErrorResult(
@@ -157,43 +159,34 @@ type MessageEventMainToFetchWorker = MessageEvent<{
                 ),
             ),
         );
-        return true; // Prevents default logging to console
+        // return true; // Prevents default logging to console
+        return None;
     }
 
-    function handleWorkerMessageErrorFallback(event: MessageEvent) {
-        console.error("Message error in fetch worker:", event);
+    async function handleWorkerPromiseRejection(
+        event: PromiseRejectionEvent,
+    ): Promise<None> {
+        console.error(
+            "Unhandled promise rejection in fetch worker:",
+            event.reason,
+        );
         self.postMessage(
             createErrorResult(
-                new WorkerMessageError(
-                    event,
-                    "Message error occurred in fetch worker",
+                new PromiseRejectionError(
+                    event.reason,
+                    "Unhandled promise rejection in fetch worker",
                 ),
             ),
         );
-        return true; // Prevents default logging to console
+        return None;
     }
 
     self.onmessage = handleWorkerMessageEvent;
     self.onerror = handleWorkerMessageError;
-    // fallback for any unforeseen errors in message handling
-    self.onmessageerror = handleWorkerMessageErrorFallback;
 
     self.addEventListener(
         "unhandledrejection",
-        (event: PromiseRejectionEvent) => {
-            console.error(
-                "Unhandled promise rejection in fetch worker:",
-                event.reason,
-            );
-            self.postMessage(
-                createErrorResult(
-                    new PromiseRejectionError(
-                        event.reason,
-                        "Unhandled promise rejection in fetch worker",
-                    ),
-                ),
-            );
-        },
+        handleWorkerPromiseRejection,
     );
 }
 
