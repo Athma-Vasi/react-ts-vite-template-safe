@@ -132,7 +132,9 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
         }
     }
 
-    function handleWorkerMessageError(event: string | Event) {
+    async function handleWorkerMessageError(
+        event: string | Event,
+    ): Promise<None> {
         console.error("Unhandled error in cache worker:", event);
         self.postMessage(
             createErrorResult(
@@ -142,24 +144,11 @@ type MessageEventMainToCacheWorker<Key = string, Value = unknown> =
                 ),
             ),
         );
-        return true; // Prevents default logging to console
-    }
-
-    function handleWorkerMessageErrorFallback(event: MessageEvent) {
-        console.error("Message error in cache worker:", event);
-        self.postMessage(
-            createErrorResult(
-                new WorkerMessageError(
-                    event,
-                    "Message error occurred in cache worker",
-                ),
-            ),
-        );
-        return true; // Prevents default logging to console
+        // return true; // Prevents default logging to console
+        return None;
     }
 
     self.onmessage = handleWorkerMessageEvent;
-    self.onmessageerror = handleWorkerMessageErrorFallback;
     self.onerror = handleWorkerMessageError;
 }
 
